@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CRODIT UABC - Administración</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0a0e1a;--card:#0f1629;--card2:#161e35;--border:#1e2d4a;--blue:#3b82f6;--cyan:#06b6d4;--text:#e2e8f0;--muted:#94a3b8;--success:#10b981;--warn:#f59e0b;--error:#ef4444}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh}
+/* SIDEBAR */
+.sidebar{width:220px;min-height:100vh;background:var(--card);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;z-index:50}
+.sidebar-logo{padding:1.2rem 1.5rem;font-size:1rem;font-weight:800;background:linear-gradient(135deg,var(--blue),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;border-bottom:1px solid var(--border)}
+.sidebar-nav{flex:1;padding:1rem 0}
+.nav-item{display:flex;align-items:center;gap:.7rem;padding:.75rem 1.5rem;cursor:pointer;color:var(--muted);font-size:.88rem;transition:all .2s;border-left:3px solid transparent}
+.nav-item:hover{color:var(--text);background:rgba(59,130,246,.06)}
+.nav-item.active{color:var(--blue);background:rgba(59,130,246,.1);border-left-color:var(--blue);font-weight:600}
+.nav-icon{font-size:1.1rem;width:20px;text-align:center}
+.sidebar-user{padding:1rem 1.5rem;border-top:1px solid var(--border)}
+.user-name{font-size:.82rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.user-role{font-size:.72rem;color:var(--muted)}
+.btn-logout{margin-top:.7rem;width:100%;background:transparent;border:1px solid var(--border);color:var(--muted);padding:.45rem;border-radius:8px;cursor:pointer;font-size:.8rem;transition:all .2s}.btn-logout:hover{border-color:var(--error);color:var(--error)}
+/* MAIN */
+.main{margin-left:220px;flex:1;padding:1.5rem 2rem;min-height:100vh}
+.page-header{margin-bottom:1.5rem}
+.page-header h1{font-size:1.4rem;font-weight:700}
+.page-header p{font-size:.85rem;color:var(--muted);margin-top:.2rem}
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:1.5rem}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.2rem}
+.stat-card .label{font-size:.75rem;color:var(--muted);font-weight:500;margin-bottom:.4rem}
+.stat-card .value{font-size:1.8rem;font-weight:800;line-height:1}
+.stat-card .sub{font-size:.72rem;color:var(--muted);margin-top:.3rem}
+/* SECTION */
+.section{display:none}.section.active{display:block}
+/* TOOLBAR */
+.toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:.7rem}
+.toolbar-left{display:flex;gap:.7rem;flex-wrap:wrap;align-items:center}
+.search{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:.5rem .8rem;color:var(--text);font-size:.85rem;outline:none;width:220px;transition:border-color .2s}
+.search:focus{border-color:var(--blue)}
+.btn{padding:.5rem 1.1rem;border-radius:8px;cursor:pointer;font-size:.85rem;font-weight:600;border:none;transition:all .2s}
+.btn-blue{background:var(--blue);color:#fff}.btn-blue:hover{background:#2563eb}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--muted)}.btn-ghost:hover{border-color:var(--blue);color:var(--blue)}
+.btn-sm{padding:.3rem .8rem;font-size:.78rem}
+.btn-success{background:var(--success);color:#fff}.btn-success:hover{opacity:.85}
+.btn-danger{background:var(--error);color:#fff}.btn-danger:hover{opacity:.85}
+.btn-warn{background:var(--warn);color:#000}.btn-warn:hover{opacity:.85}
+/* TABLE */
+.table-wrap{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:var(--card2);padding:.7rem 1rem;text-align:left;font-size:.75rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
+td{padding:.7rem 1rem;border-top:1px solid var(--border);vertical-align:middle}
+tr:hover td{background:rgba(59,130,246,.04)}
+.empty{text-align:center;color:var(--muted);padding:2rem;font-size:.9rem}
+/* BADGE */
+.badge{display:inline-block;padding:.2rem .6rem;border-radius:6px;font-size:.72rem;font-weight:600}
+.badge-green{background:rgba(16,185,129,.15);color:#34d399}
+.badge-yellow{background:rgba(245,158,11,.15);color:#fbbf24}
+.badge-red{background:rgba(239,68,68,.15);color:#f87171}
+.badge-blue{background:rgba(59,130,246,.15);color:#93c5fd}
+.badge-gray{background:rgba(148,163,184,.15);color:var(--muted)}
+/* MODAL */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;align-items:center;justify-content:center;padding:1rem}
+.overlay.show{display:flex}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:1.5rem;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;position:relative}
+.modal-title{font-size:1rem;font-weight:700;margin-bottom:1.2rem;padding-right:1.5rem}
+.modal-x{position:absolute;top:1rem;right:1.2rem;background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer}.modal-x:hover{color:var(--text)}
+.form-group{margin-bottom:.9rem}
+label{display:block;font-size:.78rem;color:var(--muted);margin-bottom:.3rem;font-weight:500}
+input,select,textarea{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:.6rem .85rem;color:var(--text);font-size:.88rem;outline:none;transition:border-color .2s;font-family:inherit}
+input:focus,select:focus,textarea:focus{border-color:var(--blue)}
+textarea{resize:vertical;min-height:70px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:.9rem}
+.modal-footer{display:flex;justify-content:flex-end;gap:.7rem;margin-top:1.2rem}
+.alert-inline{padding:.6rem .9rem;border-radius:8px;font-size:.82rem;margin-bottom:.9rem;display:none}
+.alert-error-i{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);color:#fca5a5}
+.show{display:block !important}
+/* CHIPS */
+.chip-list{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.4rem}
+.chip{padding:.25rem .65rem;border-radius:20px;font-size:.75rem;cursor:pointer;border:1px solid var(--border);color:var(--muted);transition:all .2s}.chip.selected{background:rgba(59,130,246,.2);border-color:var(--blue);color:var(--blue)}
+/* REJECT FORM */
+.motivo-field{display:none}
+@media(max-width:768px){.sidebar{width:60px}.sidebar-logo{padding:.9rem;font-size:.7rem;text-align:center}.nav-item span{display:none}.nav-item{padding:.75rem;justify-content:center}.sidebar-user{display:none}.main{margin-left:60px;padding:1rem}}
+</style>
+</head>
+<body>
+
+<nav class="sidebar">
+  <div class="sidebar-logo" style="padding:.7rem 1rem;background:#000;border-bottom:1px solid var(--border)"><img src="https://drive.google.com/thumbnail?id=1b8v80IfvGNFsoPcvaPPXrPyTrhORYtRC&sz=w600" alt="CRODT-UABC" style="height:38px;width:auto;object-fit:contain;display:block;margin:0 auto" onerror="this.parentNode.innerHTML='⚡ CRODT';this.parentNode.style.background='linear-gradient(135deg,var(--blue),var(--cyan))';this.parentNode.style.webkitBackgroundClip='text';this.parentNode.style.webkitTextFillColor='transparent';this.parentNode.style.padding='1.2rem 1.5rem'"></div>
+  <div class="sidebar-nav">
+    <div class="nav-item active" onclick="showSection('overview',this)"><span class="nav-icon">📊</span><span>Resumen</span></div>
+    <div class="nav-item" onclick="showSection('eventos',this)"><span class="nav-icon">📅</span><span>Eventos</span></div>
+    <div class="nav-item" onclick="showSection('inscripciones',this)"><span class="nav-icon">📋</span><span>Inscripciones</span></div>
+    <div class="nav-item" onclick="showSection('coaches',this)"><span class="nav-icon">🧑🏻‍💻</span><span>Coaches</span></div>
+    <div class="nav-item" onclick="showSection('participantes',this)"><span class="nav-icon">👩🏽‍👨🏻‍👧🏼‍🧒🏾</span><span>Participantes</span></div>
+    <div class="nav-item" onclick="showSection('categorias',this)"><span class="nav-icon">🤖</span><span>Categorías</span></div>
+  </div>
+  <div class="sidebar-user">
+    <div class="user-name" id="sideNombre">Cargando...</div>
+    <div class="user-role" id="sideRol">Administrador</div>
+    <button class="btn-logout" onclick="doLogout()">Cerrar sesión</button>
+  </div>
+</nav>
+
+<main class="main">
+
+  <!-- OVERVIEW -->
+  <div class="section active" id="sec-overview">
+    <div class="page-header"><h1>Panel de Administración</h1><p>Vista general del sistema</p></div>
+    <div class="stats-grid" id="statsGrid">
+      <div class="stat-card"><div class="label">Coaches</div><div class="value" id="stCoaches">-</div></div>
+      <div class="stat-card"><div class="label">Participantes</div><div class="value" id="stParts">-</div></div>
+      <div class="stat-card"><div class="label">Equipos</div><div class="value" id="stEquipos">-</div></div>
+      <div class="stat-card"><div class="label">Eventos activos</div><div class="value" id="stEventos">-</div></div>
+      <div class="stat-card"><div class="label">Inscripciones</div><div class="value" id="stIns">-</div></div>
+      <div class="stat-card"><div class="label">Pendientes</div><div class="value" id="stPend" style="color:var(--warn)">-</div></div>
+    </div>
+  </div>
+
+  <!-- EVENTOS -->
+  <div class="section" id="sec-eventos">
+    <div class="page-header"><h1>Gestión de Eventos</h1><p>Crear y administrar eventos de competencia</p></div>
+    <div class="toolbar">
+      <input class="search" placeholder="Buscar evento..." oninput="filterTable('tblEventos',this.value)">
+      <button class="btn btn-blue" onclick="openEvtModal()">+ Nuevo evento</button>
+    </div>
+    <div class="table-wrap">
+      <table id="tblEventos">
+        <thead><tr><th>Evento</th><th>Fechas</th><th>Ubicación</th><th>Categorías</th><th>Inscritos</th><th>Estado</th><th>Acciones</th></tr></thead>
+        <tbody id="tbodyEventos"><tr><td colspan="7" class="empty">Cargando...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- INSCRIPCIONES -->
+  <div class="section" id="sec-inscripciones">
+    <div class="page-header"><h1>Inscripciones</h1><p>Aprobar o rechazar solicitudes de inscripción</p></div>
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <input class="search" placeholder="Buscar..." oninput="filterTable('tblIns',this.value)">
+        <select class="search" style="width:auto" onchange="filterTableByCol('tblIns',5,this.value)">
+          <option value="">Todos los estados</option>
+          <option>pendiente</option><option>en_revision</option><option>aprobada</option><option>rechazada</option>
+        </select>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table id="tblIns">
+        <thead><tr><th>Equipo</th><th>Coach</th><th>Evento</th><th>Categoría</th><th>Fecha</th><th>Estado</th><th>Evidencia</th><th>Acciones</th></tr></thead>
+        <tbody id="tbodyIns"><tr><td colspan="8" class="empty">Cargando...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- COACHES -->
+  <div class="section" id="sec-coaches">
+    <div class="page-header"><h1>Coaches registrados</h1><p>Lista de coaches en el sistema</p></div>
+    <div class="toolbar">
+      <input class="search" placeholder="Buscar coach..." oninput="filterTable('tblCoaches',this.value)">
+    </div>
+    <div class="table-wrap">
+      <table id="tblCoaches">
+        <thead><tr><th>ID</th><th>Nombre</th><th>Institución</th><th>Correo</th><th>Teléfono</th><th>Registro</th><th>Acciones</th></tr></thead>
+        <tbody id="tbodyCoaches"><tr><td colspan="7" class="empty">Cargando...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- PARTICIPANTES -->
+  <div class="section" id="sec-participantes">
+    <div class="page-header"><h1>Participantes registrados</h1><p>Lista de participantes en el sistema</p></div>
+    <div class="toolbar">
+      <input class="search" placeholder="Buscar participante..." oninput="filterTable('tblParts',this.value)">
+    </div>
+    <div class="table-wrap">
+      <table id="tblParts">
+        <thead><tr><th>ID</th><th>Nombre</th><th>Edad</th><th>Correo</th><th>Escolaridad</th><th>Coach</th><th>Registro</th><th>Acciones</th></tr></thead>
+        <tbody id="tbodyParts"><tr><td colspan="8" class="empty">Cargando...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- CATEGORÍAS -->
+  <div class="section" id="sec-categorias">
+    <div class="page-header"><h1>Categorías</h1><p>Gestionar categorías de competencia (CRODIT UABC)</p></div>
+    <div class="toolbar">
+      <input class="search" placeholder="Buscar..." oninput="filterTable('tblCats',this.value)">
+      <button class="btn btn-blue" onclick="openCatModal()">+ Nueva categoría</button>
+    </div>
+    <div class="table-wrap">
+      <table id="tblCats">
+        <thead><tr><th>Nombre</th><th>Disciplina</th><th>Descripción</th><th>Restricciones</th><th>Mín.</th><th>Máx.</th><th>Acciones</th></tr></thead>
+        <tbody id="tbodyCats"><tr><td colspan="7" class="empty">Cargando...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+</main>
+
+<!-- MODAL EQUIPOS POR EVENTO -->
+<div class="overlay" id="eqEvtOverlay" onclick="closeBg(event,'eqEvtOverlay')">
+  <div class="modal" style="max-width:640px">
+    <button class="modal-x" onclick="closeModal('eqEvtOverlay')">✕</button>
+    <div class="modal-title" id="eqEvtTitle">Equipos inscritos</div>
+    <div id="eqEvtBody" style="max-height:60vh;overflow-y:auto"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('eqEvtOverlay')">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EVENTO -->
+<div class="overlay" id="evtOverlay" onclick="closeBg(event,'evtOverlay')">
+  <div class="modal">
+    <button class="modal-x" onclick="closeModal('evtOverlay')">✕</button>
+    <div class="modal-title" id="evtModalTitle">Nuevo evento</div>
+    <div class="alert-inline alert-error-i" id="evtAlert"></div>
+    <input type="hidden" id="evtId">
+    <div class="form-group"><label>Nombre del evento *</label><input type="text" id="evtNombre" required placeholder="CRODIT 2026 — Competencia Otoño"></div>
+    <div class="form-group"><label>Descripción</label><textarea id="evtDesc" placeholder="Descripción del evento..."></textarea></div>
+    <div class="row2">
+      <div class="form-group"><label>Fecha inicio *</label><input type="text" id="evtFini" placeholder="dd/mm/aaaa" maxlength="10" inputmode="numeric" oninput="_maskDMY(this)"></div>
+      <div class="form-group"><label>Fecha fin *</label><input type="text" id="evtFfin" placeholder="dd/mm/aaaa" maxlength="10" inputmode="numeric" oninput="_maskDMY(this)"></div>
+    </div>
+    <div class="form-group"><label>Ubicación</label><input type="text" id="evtUbic" placeholder="Ciudad, instalación..."></div>
+    <div class="form-group">
+      <label>Estado</label>
+      <select id="evtEstado"><option value="activo">Activo</option><option value="inactivo">Inactivo</option><option value="finalizado">Finalizado</option></select>
+    </div>
+    <div class="form-group">
+      <label>Categorías permitidas</label>
+      <div class="chip-list" id="catChips"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('evtOverlay')">Cancelar</button>
+      <button class="btn btn-blue" id="btnSaveEvento" onclick="saveEvento()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL RECHAZO -->
+<div class="overlay" id="rejOverlay" onclick="closeBg(event,'rejOverlay')">
+  <div class="modal" style="max-width:380px">
+    <button class="modal-x" onclick="closeModal('rejOverlay')">✕</button>
+    <div class="modal-title">Rechazar inscripción</div>
+    <input type="hidden" id="rejId">
+    <div class="form-group"><label>Motivo del rechazo</label><textarea id="rejMotivo" placeholder="Explica el motivo del rechazo..." rows="3"></textarea></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('rejOverlay')">Cancelar</button>
+      <button class="btn btn-danger" id="btnRechazar" onclick="doRechazar()">Rechazar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CATEGORÍA -->
+<div class="overlay" id="catOverlay" onclick="closeBg(event,'catOverlay')">
+  <div class="modal" style="max-width:520px">
+    <button class="modal-x" onclick="closeModal('catOverlay')">✕</button>
+    <div class="modal-title">Nueva categoría</div>
+    <div class="alert-inline alert-error-i" id="catAlert"></div>
+    <div class="form-group"><label>Nombre *</label><input type="text" id="catNombre" placeholder="Ej. Minisumo Profesional"></div>
+    <div class="form-group">
+      <label>Disciplina</label>
+      <select id="catDisciplina">
+        <option value="">— Selecciona —</option>
+        <option value="Seguidor de Línea">Seguidor de Línea</option>
+        <option value="Sumo">Sumo</option>
+        <option value="Laberinto">Laberinto</option>
+        <option value="Fútbol Robótico">Fútbol Robótico</option>
+        <option value="Otro">Otro</option>
+      </select>
+    </div>
+    <div class="form-group"><label>Descripción</label><textarea id="catDesc" rows="2" placeholder="Descripción breve de la categoría"></textarea></div>
+    <div class="form-group"><label>Restricciones técnicas</label><textarea id="catRestricciones" rows="3" placeholder="Tamaño, peso, motores, batería, sensores…"></textarea></div>
+    <div class="row2">
+      <div class="form-group"><label>Mín. integrantes</label><input type="number" id="catMin" value="1" min="1"></div>
+      <div class="form-group"><label>Máx. integrantes</label><input type="number" id="catMax" value="4" min="1"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('catOverlay')">Cancelar</button>
+      <button class="btn btn-blue" id="btnSaveCat" onclick="saveCategoria()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var TOKEN = '<?= token ?>';
+var NOMBRE = 'Admin';
+var APP_URL = '';
+var allCategorias = [];
+
+// ===== CACHÉ CLIENTE (instant tab-switch) =====
+var _panel = {};
+var _panelTs = {};
+var _PANEL_TTL = 30000;
+function _fresh(k){ return _panel[k] && (Date.now() - (_panelTs[k]||0) < _PANEL_TTL); }
+function _setPanel(k, res){ if(res){ _panel[k]=res; _panelTs[k]=Date.now(); } }
+
+// Auth check + bundled prefetch (1 sólo round-trip para TODO el panel)
+google.script.run.withSuccessHandler(function(res){
+  if (!res.valid || (res.rol !== 'admin' && res.rol !== 'organizador')) { window.location.href = window.location.href.split('?')[0]; return; }
+  NOMBRE = res.nombre || 'Admin';
+  document.getElementById('sideNombre').textContent = NOMBRE;
+  document.getElementById('sideRol').textContent = res.rol === 'organizador' ? 'Organizador' : 'Administrador';
+
+  google.script.run.withSuccessHandler(function(p){
+    if (p && p.success) {
+      _setPanel('reportes', p.reportes);
+      _setPanel('eventos', p.eventos);
+      _setPanel('inscripciones', p.inscripciones);
+      _setPanel('coaches', p.coaches);
+      _setPanel('participantes', p.participantes);
+      _setPanel('categorias', p.categorias);
+      if (p.categorias && p.categorias.success) allCategorias = p.categorias.data || [];
+    }
+    loadReportes();
+    loadCategorias();
+  }).withFailureHandler(function(){
+    loadReportes(); loadCategorias();
+  }).cargarPanelAdmin(TOKEN);
+}).withFailureHandler(function(){ redirectLogin(); }).verificarSesion(TOKEN);
+
+google.script.run.withSuccessHandler(function(url){ APP_URL = url; }).getAppUrl();
+
+function redirectLogin(){ if(APP_URL) window.location.href = APP_URL; else window.location.href = window.location.href.split('?')[0]; }
+
+// NAVIGATION
+function showSection(id, el) {
+  document.querySelectorAll('.section').forEach(function(s){ s.classList.remove('active'); });
+  document.querySelectorAll('.nav-item').forEach(function(n){ n.classList.remove('active'); });
+  document.getElementById('sec-'+id).classList.add('active');
+  el.classList.add('active');
+  var loaders = { eventos: loadEventos, inscripciones: loadInscripciones, coaches: loadCoaches, participantes: loadParticipantes, categorias: loadCategorias };
+  if (loaders[id]) loaders[id]();
+}
+
+function doLogout(){
+  google.script.run.withSuccessHandler(function(){ sessionStorage.clear(); redirectLogin(); }).cerrarSesion(TOKEN);
+}
+
+// MODALS
+function openModal(id){ document.getElementById(id).classList.add('show'); }
+function closeModal(id){ document.getElementById(id).classList.remove('show'); }
+function closeBg(e,id){ if(e.target===document.getElementById(id)) closeModal(id); }
+
+// FILTER (insensible a acentos, multi-token AND)
+function _norm(s){ return String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\s+/g,' ').trim(); }
+function filterTable(tableId, q) {
+  var rows = document.getElementById(tableId).querySelectorAll('tbody tr');
+  var tokens = _norm(q).split(' ').filter(function(t){ return t.length>0; });
+  rows.forEach(function(r){
+    if(!tokens.length){ r.style.display=''; return; }
+    var hay = _norm(r.textContent);
+    var match = true;
+    for(var i=0;i<tokens.length;i++){ if(hay.indexOf(tokens[i])===-1){ match=false; break; } }
+    r.style.display = match ? '' : 'none';
+  });
+}
+function filterTableByCol(tableId, col, val) {
+  var rows = document.getElementById(tableId).querySelectorAll('tbody tr');
+  var nval = _norm(val);
+  rows.forEach(function(r){
+    var cells = r.querySelectorAll('td');
+    r.style.display = (!val || (cells[col] && _norm(cells[col].textContent) === nval)) ? '' : 'none';
+  });
+}
+
+// FORMAT
+function fmtDate(d){
+  if(!d) return '-';
+  try{
+    if(typeof d==='string'){
+      var m=d.match(/^(\d{4})-(\d{2})-(\d{2})/);
+      if(m) return m[3]+'/'+m[2]+'/'+m[1];
+    }
+    var dt=new Date(d);
+    var dd=('0'+dt.getDate()).slice(-2), mm=('0'+(dt.getMonth()+1)).slice(-2), yy=dt.getFullYear();
+    return dd+'/'+mm+'/'+yy;
+  }catch(e){ return d; }
+}
+function _isoToDMY(s){ if(!s) return ''; var m=String(s).match(/^(\d{4})-(\d{2})-(\d{2})/); return m? (m[3]+'/'+m[2]+'/'+m[1]) : ''; }
+function _dmyToIso(s){ if(!s) return ''; var m=String(s).match(/^(\d{2})\/(\d{2})\/(\d{4})$/); return m? (m[3]+'-'+m[2]+'-'+m[1]) : ''; }
+function _maskDMY(inp){
+  var v=inp.value.replace(/\D/g,'').slice(0,8);
+  var out=v;
+  if(v.length>4) out=v.slice(0,2)+'/'+v.slice(2,4)+'/'+v.slice(4);
+  else if(v.length>2) out=v.slice(0,2)+'/'+v.slice(2);
+  inp.value=out;
+}
+function stateBadge(s){
+  var map = { pendiente:'badge-yellow', en_revision:'badge-blue', aprobada:'badge-green', rechazada:'badge-red', activo:'badge-green', inactivo:'badge-gray', finalizado:'badge-blue' };
+  return '<span class="badge '+(map[s]||'badge-gray')+'">'+s+'</span>';
+}
+
+// REPORTES
+function _renderReportes(res){
+  if(!res || !res.success) return;
+  var d = res.data;
+  document.getElementById('stCoaches').textContent = d.totalCoaches;
+  document.getElementById('stParts').textContent = d.totalParticipantes;
+  document.getElementById('stEquipos').textContent = d.totalEquipos;
+  document.getElementById('stEventos').textContent = d.eventosActivos+'/'+d.totalEventos;
+  document.getElementById('stIns').textContent = d.totalInscripciones;
+  document.getElementById('stPend').textContent = (d.inscripcionesPorEstado['pendiente']||0)+(d.inscripcionesPorEstado['en_revision']||0);
+}
+function loadReportes(forceFresh){
+  if(!forceFresh && _fresh('reportes')){ _renderReportes(_panel.reportes); return; }
+  google.script.run.withSuccessHandler(function(res){ _setPanel('reportes', res); _renderReportes(res); }).obtenerReportes(TOKEN);
+}
+
+// EVENTOS
+function _renderEventos(res){
+  if(!res || !res.success){ document.getElementById('tbodyEventos').innerHTML='<tr><td colspan="7" class="empty">'+((res&&res.error)||'Error')+'</td></tr>'; return; }
+  if(!res.data.length){ document.getElementById('tbodyEventos').innerHTML='<tr><td colspan="7" class="empty">Sin eventos registrados</td></tr>'; return; }
+  document.getElementById('tbodyEventos').innerHTML = res.data.map(function(e){
+    return '<tr><td><strong>'+e.nombreEvento+'</strong><br><small style="color:var(--muted)">'+e.idEvento+'</small></td>'
+      +'<td>'+fmtDate(e.fechaInicio)+'<br>'+fmtDate(e.fechaFin)+'</td>'
+      +'<td>'+( e.ubicacion||'-')+'</td>'
+      +'<td>'+(e.categorias||[]).map(function(c){return c.nombre||c;}).join(', ')+'</td>'
+      +'<td>'+e.totalInscritos+'</td>'
+      +'<td>'+stateBadge(e.estado)+'</td>'
+      +'<td><button class="btn btn-ghost btn-sm" onclick="verEquiposEvento(\''+e.idEvento+'\',\''+String(e.nombreEvento).replace(/'/g,"\\'")+'\')">👥 Equipos</button> '
+      +'<button class="btn btn-ghost btn-sm" onclick=\'editEvt('+JSON.stringify(e)+')\'>Editar</button> '
+      +'<button class="btn btn-ghost btn-sm" style="color:var(--red)" onclick="delEvento(\''+e.idEvento+'\',\''+String(e.nombreEvento).replace(/'/g,"\\'")+'\')">🗑</button></td></tr>';
+  }).join('');
+}
+function loadEventos(forceFresh){
+  if(!forceFresh && _fresh('eventos')){ _renderEventos(_panel.eventos); return; }
+  document.getElementById('tbodyEventos').innerHTML = '<tr><td colspan="7" class="empty">Cargando...</td></tr>';
+  google.script.run.withSuccessHandler(function(res){ _setPanel('eventos', res); _renderEventos(res); }).obtenerEventos(TOKEN);
+}
+
+function openEvtModal(ev){
+  document.getElementById('evtAlert').classList.remove('show');
+  document.getElementById('evtId').value = '';
+  document.getElementById('evtNombre').value=''; document.getElementById('evtDesc').value='';
+  document.getElementById('evtFini').value=''; document.getElementById('evtFfin').value='';
+  document.getElementById('evtUbic').value=''; document.getElementById('evtEstado').value='activo';
+  document.getElementById('evtModalTitle').textContent='Nuevo evento';
+  buildCatChips([]);
+  openModal('evtOverlay');
+}
+
+function editEvt(ev){
+  document.getElementById('evtAlert').classList.remove('show');
+  document.getElementById('evtModalTitle').textContent='Editar evento';
+  document.getElementById('evtId').value=ev.idEvento;
+  document.getElementById('evtNombre').value=ev.nombreEvento||'';
+  document.getElementById('evtDesc').value=ev.descripcion||'';
+  document.getElementById('evtFini').value=_isoToDMY((ev.fechaInicio||'').substring(0,10));
+  document.getElementById('evtFfin').value=_isoToDMY((ev.fechaFin||'').substring(0,10));
+  document.getElementById('evtUbic').value=ev.ubicacion||'';
+  document.getElementById('evtEstado').value=ev.estado||'activo';
+  buildCatChips((ev.categorias||[]).map(function(c){return c.idCategoria||c;}));
+  openModal('evtOverlay');
+}
+
+function buildCatChips(selectedIds){
+  var container = document.getElementById('catChips');
+  container.innerHTML = allCategorias.map(function(c){
+    var sel = selectedIds.indexOf(c.idCategoria) !== -1 ? ' selected' : '';
+    return '<div class="chip'+sel+'" data-id="'+c.idCategoria+'" onclick="this.classList.toggle(\'selected\')">'+c.nombre+'</div>';
+  }).join('');
+}
+
+function saveEvento(){
+  var id = document.getElementById('evtId').value;
+  var data = {
+    idEvento: id||null,
+    nombreEvento: document.getElementById('evtNombre').value.trim(),
+    descripcion: document.getElementById('evtDesc').value.trim(),
+    fechaInicio: _dmyToIso(document.getElementById('evtFini').value.trim()),
+    fechaFin: _dmyToIso(document.getElementById('evtFfin').value.trim()),
+    ubicacion: document.getElementById('evtUbic').value.trim(),
+    estado: document.getElementById('evtEstado').value,
+    categorias: Array.from(document.querySelectorAll('#catChips .chip.selected')).map(function(c){ return c.dataset.id; })
+  };
+  if(!data.nombreEvento||!data.fechaInicio||!data.fechaFin){ showModalAlert('evtAlert','Nombre y fechas son requeridos'); return; }
+  var btn = document.getElementById('btnSaveEvento');
+  if(btn.disabled) return;
+  btn.disabled = true; btn.textContent = 'Guardando...';
+  var fn = id ? 'editarEvento' : 'crearEvento';
+  google.script.run.withSuccessHandler(function(res){
+    btn.disabled = false; btn.textContent = 'Guardar';
+    if(!res || !res.success){ showModalAlert('evtAlert',(res && res.error)||'Error'); return; }
+    closeModal('evtOverlay'); loadEventos(true); loadReportes(true);
+  }).withFailureHandler(function(e){
+    btn.disabled = false; btn.textContent = 'Guardar';
+    showModalAlert('evtAlert',e.message);
+  })[fn](TOKEN, data);
+}
+
+// INSCRIPCIONES
+function _renderInscripciones(res){
+  if(!res || !res.success){ document.getElementById('tbodyIns').innerHTML='<tr><td colspan="8" class="empty">'+((res&&res.error)||'Error')+'</td></tr>'; return; }
+  if(!res.data.length){ document.getElementById('tbodyIns').innerHTML='<tr><td colspan="8" class="empty">Sin inscripciones</td></tr>'; return; }
+  document.getElementById('tbodyIns').innerHTML = res.data.map(function(i){
+    var evid = i.evidenciaURL ? '<a href="'+i.evidenciaURL+'" target="_blank" style="color:var(--blue);font-size:.78rem">Ver</a>' : '<span style="color:var(--muted);font-size:.78rem">-</span>';
+    var btns = '';
+    if(i.estado==='pendiente'||i.estado==='en_revision'){
+      btns='<button class="btn btn-success btn-sm" onclick="aprobar(\''+i.idInscripcion+'\')">✓</button> '
+          +'<button class="btn btn-danger btn-sm" onclick="rechazar(\''+i.idInscripcion+'\')">✗</button>';
+    }
+    return '<tr><td><strong>'+i.nombreEquipo+'</strong></td><td>'+i.nombreCoach+'</td><td>'+i.nombreEvento+'</td>'
+      +'<td>'+i.categoria+'</td><td>'+fmtDate(i.fechaInscripcion)+'</td><td>'+stateBadge(i.estado)+'</td>'
+      +'<td>'+evid+'</td><td>'+btns+'</td></tr>';
+  }).join('');
+}
+function loadInscripciones(forceFresh){
+  if(!forceFresh && _fresh('inscripciones')){ _renderInscripciones(_panel.inscripciones); return; }
+  document.getElementById('tbodyIns').innerHTML='<tr><td colspan="8" class="empty">Cargando...</td></tr>';
+  google.script.run.withSuccessHandler(function(res){ _setPanel('inscripciones', res); _renderInscripciones(res); }).obtenerTodasInscripciones(TOKEN);
+}
+
+function aprobar(id){
+  if(!confirm('¿Aprobar esta inscripción?')) return;
+  google.script.run.withSuccessHandler(function(res){
+    if(!res.success){ alert(res.error); return; }
+    loadInscripciones(true); loadReportes(true);
+  }).aprobarInscripcion(TOKEN, id);
+}
+
+function rechazar(id){
+  document.getElementById('rejId').value = id;
+  document.getElementById('rejMotivo').value = '';
+  openModal('rejOverlay');
+}
+
+function doRechazar(){
+  var btn = document.getElementById('btnRechazar');
+  if(btn && btn.disabled) return;
+  var id = document.getElementById('rejId').value;
+  var motivo = document.getElementById('rejMotivo').value.trim();
+  if(btn){ btn.disabled = true; btn.textContent = 'Procesando...'; }
+  google.script.run.withSuccessHandler(function(res){
+    if(btn){ btn.disabled = false; btn.textContent = 'Rechazar'; }
+    if(!res.success){ alert(res.error); return; }
+    closeModal('rejOverlay'); loadInscripciones(true); loadReportes(true);
+  }).withFailureHandler(function(e){ if(btn){ btn.disabled = false; btn.textContent = 'Rechazar'; } alert('Error: '+(e.message||e)); }).rechazarInscripcion(TOKEN, id, motivo);
+}
+
+// COACHES
+function _renderCoaches(res){
+  if(!res || !res.success){ document.getElementById('tbodyCoaches').innerHTML='<tr><td colspan="7" class="empty">'+((res&&res.error)||'Error')+'</td></tr>'; return; }
+  if(!res.data.length){ document.getElementById('tbodyCoaches').innerHTML='<tr><td colspan="7" class="empty">Sin coaches registrados</td></tr>'; return; }
+  document.getElementById('tbodyCoaches').innerHTML = res.data.map(function(c){
+    var nom = (c.nombre+' '+c.apellido).replace(/'/g,"\\'");
+    return '<tr><td style="font-size:.78rem;color:var(--muted)">'+c.idCoach+'</td><td>'+c.nombre+' '+c.apellido+'</td>'
+      +'<td>'+c.institucion+'</td><td>'+c.correo+'</td><td>'+(c.telefono||'-')+'</td><td>'+fmtDate(c.fechaRegistro)+'</td>'
+      +'<td><button class="btn btn-ghost" style="color:var(--red);padding:.35rem .7rem;font-size:.78rem" onclick="delCoach(\''+c.idCoach+'\',\''+nom+'\')">🗑 Borrar</button></td></tr>';
+  }).join('');
+}
+function loadCoaches(forceFresh){
+  if(!forceFresh && _fresh('coaches')){ _renderCoaches(_panel.coaches); return; }
+  document.getElementById('tbodyCoaches').innerHTML='<tr><td colspan="7" class="empty">Cargando...</td></tr>';
+  google.script.run.withSuccessHandler(function(res){ _setPanel('coaches', res); _renderCoaches(res); }).obtenerCoaches(TOKEN);
+}
+
+function delCoach(idCoach, nombre){
+  if(!confirm('¿Borrar al coach "'+nombre+'"?\n\nEsto eliminará TODA su información: equipos, participantes, inscripciones y acceso al sistema.\n\nEsta acción no se puede deshacer.')) return;
+  google.script.run.withSuccessHandler(function(res){
+    if(!res.success){ alert('Error: '+res.error); return; }
+    alert('Coach borrado correctamente.');
+    loadCoaches(true);
+    if(typeof loadParticipantes==='function') loadParticipantes(true);
+  }).withFailureHandler(function(e){ alert('Error: '+(e.message||e)); }).eliminarCoachAdmin(TOKEN, idCoach);
+}
+
+// PARTICIPANTES (admin)
+function _renderParticipantes(res){
+  if(!res || !res.success){ document.getElementById('tbodyParts').innerHTML='<tr><td colspan="8" class="empty">'+((res&&res.error)||'Error')+'</td></tr>'; return; }
+  if(!res.data.length){ document.getElementById('tbodyParts').innerHTML='<tr><td colspan="8" class="empty">Sin participantes registrados</td></tr>'; return; }
+  document.getElementById('tbodyParts').innerHTML = res.data.map(function(p){
+    var nom = (p.nombre+' '+p.apellido).replace(/'/g,"\\'");
+    var coachCell = '-';
+    if (p.coachNombre) {
+      coachCell = '<div style="line-height:1.2"><div style="color:var(--text)">'+p.coachNombre+'</div>'
+        +'<div style="font-size:.7rem;color:var(--muted)">'+(p.coachEmail||'')+'</div></div>';
+    } else if (p.coachEmail) {
+      coachCell = '<span style="font-size:.78rem;color:var(--muted)">'+p.coachEmail+'</span>';
+    }
+    return '<tr><td style="font-size:.78rem;color:var(--muted)">'+p.idParticipante+'</td>'
+      +'<td>'+p.nombre+' '+p.apellido+'</td><td>'+(p.edad||'-')+'</td><td>'+p.correo+'</td>'
+      +'<td>'+(p.escolaridad||'-')+'</td><td>'+coachCell+'</td>'
+      +'<td>'+fmtDate(p.fechaRegistro)+'</td>'
+      +'<td><button class="btn btn-ghost" style="color:var(--red);padding:.35rem .7rem;font-size:.78rem" onclick="delParticipante(\''+p.idParticipante+'\',\''+nom+'\')">🗑 Borrar</button></td></tr>';
+  }).join('');
+}
+function loadParticipantes(forceFresh){
+  if(!forceFresh && _fresh('participantes')){ _renderParticipantes(_panel.participantes); return; }
+  document.getElementById('tbodyParts').innerHTML='<tr><td colspan="8" class="empty">Cargando...</td></tr>';
+  google.script.run.withSuccessHandler(function(res){ _setPanel('participantes', res); _renderParticipantes(res); }).obtenerParticipantesAdmin(TOKEN);
+}
+
+function delParticipante(idPart, nombre){
+  if(!confirm('¿Borrar al participante "'+nombre+'"?\n\nEsto eliminará todas sus asignaciones a equipos y su acceso al sistema.\n\nEsta acción no se puede deshacer.')) return;
+  google.script.run.withSuccessHandler(function(res){
+    if(!res.success){ alert('Error: '+res.error); return; }
+    alert('Participante borrado correctamente.');
+    loadParticipantes(true);
+  }).withFailureHandler(function(e){ alert('Error: '+(e.message||e)); }).eliminarParticipanteAdmin(TOKEN, idPart);
+}
+
+// CATEGORÍAS
+function escAttr(s){ return String(s||'').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+function escHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function _renderCategorias(res){
+  if(!res || !res.success) return;
+  allCategorias = res.data;
+  if(!res.data.length){ document.getElementById('tbodyCats').innerHTML='<tr><td colspan="7" class="empty">Sin categorías</td></tr>'; return; }
+  document.getElementById('tbodyCats').innerHTML = res.data.map(function(c){
+    var nom = String(c.nombre).replace(/'/g,"\\'");
+    var disc = c.disciplina || '';
+    var rest = c.restricciones || '';
+    var discBadge = disc ? '<span class="badge badge-blue">'+escHtml(disc)+'</span>' : '<span style="color:var(--muted)">—</span>';
+    var restCell = rest
+      ? '<span style="color:var(--muted);font-size:.78rem;line-height:1.4;display:block;max-width:340px" title="'+escAttr(rest)+'">'+escHtml(rest)+'</span>'
+      : '<span style="color:var(--muted)">—</span>';
+    return '<tr>'
+      + '<td><strong>'+escHtml(c.nombre)+'</strong><div style="font-size:.7rem;color:var(--muted);margin-top:.15rem">'+escHtml(c.idCategoria)+'</div></td>'
+      + '<td>'+discBadge+'</td>'
+      + '<td style="color:var(--muted);max-width:280px">'+escHtml(c.descripcion)+'</td>'
+      + '<td>'+restCell+'</td>'
+      + '<td>'+c.minIntegrantes+'</td>'
+      + '<td>'+c.maxIntegrantes+'</td>'
+      + '<td><button class="btn btn-ghost btn-sm" style="color:var(--red)" onclick="delCategoria(\''+c.idCategoria+'\',\''+nom+'\')">🗑 Borrar</button></td>'
+      + '</tr>';
+  }).join('');
+}
+function loadCategorias(forceFresh){
+  if(!forceFresh && _fresh('categorias')){ _renderCategorias(_panel.categorias); return; }
+  google.script.run.withSuccessHandler(function(res){ _setPanel('categorias', res); _renderCategorias(res); }).obtenerCategorias();
+}
+
+function openCatModal(){
+  document.getElementById('catAlert').classList.remove('show');
+  document.getElementById('catNombre').value='';
+  document.getElementById('catDisciplina').value='';
+  document.getElementById('catDesc').value='';
+  document.getElementById('catRestricciones').value='';
+  document.getElementById('catMin').value=1;
+  document.getElementById('catMax').value=4;
+  openModal('catOverlay');
+}
+
+function saveCategoria(){
+  var btn = document.getElementById('btnSaveCat');
+  if(btn.disabled) return;
+  var data = {
+    nombre: document.getElementById('catNombre').value.trim(),
+    disciplina: document.getElementById('catDisciplina').value.trim(),
+    descripcion: document.getElementById('catDesc').value.trim(),
+    restricciones: document.getElementById('catRestricciones').value.trim(),
+    minIntegrantes: document.getElementById('catMin').value,
+    maxIntegrantes: document.getElementById('catMax').value
+  };
+  if(!data.nombre){ showModalAlert('catAlert','El nombre es requerido'); return; }
+  var dup = (allCategorias||[]).some(function(c){ return String(c.nombre).trim().toLowerCase() === data.nombre.toLowerCase(); });
+  if(dup){ showModalAlert('catAlert','Ya existe una categoría con ese nombre'); return; }
+  btn.disabled = true; btn.textContent = 'Guardando...';
+  google.script.run.withSuccessHandler(function(res){
+    if(!res.success){ btn.disabled = false; btn.textContent = 'Guardar'; showModalAlert('catAlert',res.error); return; }
+    closeModal('catOverlay'); loadCategorias(true);
+    btn.disabled = false; btn.textContent = 'Guardar';
+  }).withFailureHandler(function(e){ btn.disabled = false; btn.textContent = 'Guardar'; showModalAlert('catAlert', e.message||e); }).crearCategoria(TOKEN, data);
+}
+
+function verEquiposEvento(idEvento, nombre){
+  document.getElementById('eqEvtTitle').textContent = 'Equipos inscritos: ' + nombre;
+  document.getElementById('eqEvtBody').innerHTML = '<p style="color:var(--muted);padding:1rem">Cargando...</p>';
+  openModal('eqEvtOverlay');
+  google.script.run.withSuccessHandler(function(res){
+    if(!res.success){ document.getElementById('eqEvtBody').innerHTML = '<p style="color:var(--red);padding:1rem">'+res.error+'</p>'; return; }
+    if(!res.data.length){ document.getElementById('eqEvtBody').innerHTML = '<p style="color:var(--muted);padding:1rem">No hay equipos inscritos en este evento.</p>'; return; }
+    document.getElementById('eqEvtBody').innerHTML = res.data.map(function(eq){
+      var parts = eq.participantes.length
+        ? '<ul style="margin:.4rem 0 0 1.2rem;color:var(--text);font-size:.85rem">'
+            + eq.participantes.map(function(p){ return '<li>'+p.nombre+' <span style="color:var(--muted);font-size:.78rem">('+p.correo+')</span></li>'; }).join('')
+            + '</ul>'
+        : '<p style="color:var(--muted);font-size:.82rem;margin-top:.3rem">Sin participantes asignados.</p>';
+      return '<div style="border:1px solid var(--border);border-radius:10px;padding:.9rem 1rem;margin-bottom:.7rem;background:rgba(59,130,246,.04)">'
+        + '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.4rem">'
+        + '<strong style="font-size:.95rem">'+eq.nombreEquipo+'</strong>'
+        + '<span style="font-size:.75rem;color:var(--muted)">'+eq.idEquipo+' • '+eq.categoria+'</span></div>'
+        + '<div style="font-size:.82rem;color:var(--muted);margin-top:.3rem">👤 Coach: <span style="color:var(--text)">'+eq.coachNombre+'</span> ('+eq.coachEmail+')</div>'
+        + '<div style="font-size:.82rem;color:var(--muted);margin-top:.3rem">🧑‍🎓 Participantes:</div>'
+        + parts
+        + '</div>';
+    }).join('');
+  }).withFailureHandler(function(e){ document.getElementById('eqEvtBody').innerHTML = '<p style="color:var(--red);padding:1rem">'+(e.message||e)+'</p>'; }).obtenerEquiposPorEvento(TOKEN, idEvento);
+}
+
+function delEvento(idEvento, nombre){
+  if(!confirm('¿Borrar el evento "'+nombre+'"?\n\nEsto eliminará el evento, sus categorías asociadas y todas sus inscripciones.\n\nEsta acción no se puede deshacer.')) return;
+  google.script.run.withSuccessHandler(function(res){
+    if(!res.success){ alert('Error: '+res.error); return; }
+    alert('Evento borrado correctamente.');
+    loadEventos(true); loadReportes(true);
+  }).withFailureHandler(function(e){ alert('Error: '+(e.message||e)); }).eliminarEventoAdmin(TOKEN, idEvento);
+}
+
+function delCategoria(idCategoria, nombre){
+  if(!confirm('¿Borrar la categoría "'+nombre+'"?\n\nEsto eliminará los equipos de esa categoría, sus integrantes asignados y las inscripciones relacionadas.\n\nEsta acción no se puede deshacer.')) return;
+  google.script.run.withSuccessHandler(function(res){
+    if(!res.success){ alert('Error: '+res.error); return; }
+    alert('Categoría borrada correctamente.');
+    loadCategorias(true);
+  }).withFailureHandler(function(e){ alert('Error: '+(e.message||e)); }).eliminarCategoriaAdmin(TOKEN, idCategoria);
+}
+
+function showModalAlert(id, msg){ var el=document.getElementById(id); el.textContent=msg; el.classList.add('show'); }
+</script>
+</body>
+</html>

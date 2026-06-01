@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CRODIT UABC - Panel Asesor</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0a0e1a;--card:#0f1629;--card2:#161e35;--border:#1e2d4a;--blue:#3b82f6;--cyan:#06b6d4;--text:#e2e8f0;--muted:#94a3b8;--success:#10b981;--warn:#f59e0b;--error:#ef4444}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh}
+.sidebar{width:220px;min-height:100vh;background:var(--card);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;z-index:50}
+.sidebar-logo{padding:1.2rem 1.5rem;font-size:1rem;font-weight:800;background:linear-gradient(135deg,var(--blue),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;border-bottom:1px solid var(--border)}
+.sidebar-nav{flex:1;padding:1rem 0}
+.nav-item{display:flex;align-items:center;gap:.7rem;padding:.75rem 1.5rem;cursor:pointer;color:var(--muted);font-size:.88rem;transition:all .2s;border-left:3px solid transparent}
+.nav-item:hover{color:var(--text);background:rgba(59,130,246,.06)}.nav-item.active{color:var(--blue);background:rgba(59,130,246,.1);border-left-color:var(--blue);font-weight:600}
+.nav-icon{font-size:1.1rem;width:20px;text-align:center}
+.sidebar-user{padding:1rem 1.5rem;border-top:1px solid var(--border)}
+.user-name{font-size:.82rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.user-role{font-size:.72rem;color:var(--muted)}
+.btn-logout{margin-top:.7rem;width:100%;background:transparent;border:1px solid var(--border);color:var(--muted);padding:.45rem;border-radius:8px;cursor:pointer;font-size:.8rem;transition:all .2s}.btn-logout:hover{border-color:var(--error);color:var(--error)}
+.main{margin-left:220px;flex:1;padding:1.5rem 2rem;min-height:100vh}
+.page-header{margin-bottom:1.5rem}.page-header h1{font-size:1.4rem;font-weight:700}.page-header p{font-size:.85rem;color:var(--muted);margin-top:.2rem}
+.section{display:none}.section.active{display:block}
+.toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:.7rem}
+.search{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:.5rem .8rem;color:var(--text);font-size:.85rem;outline:none;width:220px;transition:border-color .2s}.search:focus{border-color:var(--blue)}
+.btn{padding:.5rem 1.1rem;border-radius:8px;cursor:pointer;font-size:.85rem;font-weight:600;border:none;transition:all .2s}
+.btn-blue{background:var(--blue);color:#fff}.btn-blue:hover{background:#2563eb}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--muted)}.btn-ghost:hover{border-color:var(--blue);color:var(--blue)}
+.btn-sm{padding:.3rem .8rem;font-size:.78rem}
+.btn-danger{background:var(--error);color:#fff}.btn-danger:hover{opacity:.85}
+.btn-warn{background:var(--warn);color:#000}.btn-warn:hover{opacity:.85}
+.table-wrap{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:var(--card2);padding:.7rem 1rem;text-align:left;font-size:.75rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
+td{padding:.7rem 1rem;border-top:1px solid var(--border);vertical-align:middle}
+tr:hover td{background:rgba(59,130,246,.04)}
+.empty{text-align:center;color:var(--muted);padding:2rem;font-size:.9rem}
+.badge{display:inline-block;padding:.2rem .6rem;border-radius:6px;font-size:.72rem;font-weight:600}
+.badge-green{background:rgba(16,185,129,.15);color:#34d399}.badge-yellow{background:rgba(245,158,11,.15);color:#fbbf24}.badge-red{background:rgba(239,68,68,.15);color:#f87171}.badge-blue{background:rgba(59,130,246,.15);color:#93c5fd}.badge-gray{background:rgba(148,163,184,.15);color:var(--muted)}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;align-items:center;justify-content:center;padding:1rem}.overlay.show{display:flex}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:1.5rem;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;position:relative}
+.modal-title{font-size:1rem;font-weight:700;margin-bottom:1.2rem;padding-right:1.5rem}
+.modal-x{position:absolute;top:1rem;right:1.2rem;background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer}.modal-x:hover{color:var(--text)}
+.form-group{margin-bottom:.9rem}
+label{display:block;font-size:.78rem;color:var(--muted);margin-bottom:.3rem;font-weight:500}
+input,select,textarea{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:.6rem .85rem;color:var(--text);font-size:.88rem;outline:none;transition:border-color .2s;font-family:inherit}
+input:focus,select:focus,textarea:focus{border-color:var(--blue)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:.9rem}
+.modal-footer{display:flex;justify-content:flex-end;gap:.7rem;margin-top:1.2rem}
+.alert-inline{padding:.6rem .9rem;border-radius:8px;font-size:.82rem;margin-bottom:.9rem;display:none}
+.alert-error-i{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);color:#fca5a5}
+.alert-ok-i{background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.3);color:#6ee7b7}
+.show{display:block !important}
+/* member checkboxes */
+.check-list{max-height:150px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;padding:.5rem}
+.check-item{display:flex;align-items:center;gap:.5rem;padding:.3rem .5rem;cursor:pointer;border-radius:6px;font-size:.85rem;transition:background .2s}.check-item:hover{background:rgba(59,130,246,.08)}
+.check-item input{width:auto;padding:0}
+.chip{padding:.35rem .7rem;border-radius:18px;background:rgba(255,255,255,.04);border:1px solid var(--border);font-size:.78rem;cursor:pointer;user-select:none;transition:all .15s}
+.chip:hover{border-color:var(--blue)}
+.chip.selected{background:rgba(59,130,246,.18);border-color:var(--blue);color:#bfdbfe}
+.chip.disabled{opacity:.4;cursor:not-allowed;text-decoration:line-through}
+/* events grid */
+.events-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem}
+.event-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.2rem;transition:border-color .2s}.event-card:hover{border-color:var(--blue)}
+.event-title{font-size:1rem;font-weight:600;margin-bottom:.4rem}
+.event-meta{font-size:.78rem;color:var(--muted);margin-bottom:.8rem;line-height:1.6}
+.event-cats{display:flex;flex-wrap:wrap;gap:.3rem;margin-bottom:.8rem}
+.event-cat{padding:.15rem .5rem;border-radius:4px;font-size:.7rem;background:rgba(59,130,246,.12);color:var(--blue)}
+/* stats mini */
+.mini-stats{display:flex;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap}
+.mini-stat{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:.9rem 1.2rem;flex:1;min-width:120px}
+.mini-stat .mn{font-size:1.6rem;font-weight:700;line-height:1}.mini-stat .ml{font-size:.75rem;color:var(--muted);margin-top:.2rem}
+@media(max-width:768px){.sidebar{width:60px}.sidebar-logo{padding:.9rem;font-size:.7rem;text-align:center}.nav-item span{display:none}.nav-item{padding:.75rem;justify-content:center}.sidebar-user{display:none}.main{margin-left:60px;padding:1rem}}
+</style>
+</head>
+<body>
+
+<nav class="sidebar">
+  <div class="sidebar-logo" style="padding:.7rem 1rem;background:#000;border-bottom:1px solid var(--border)"><img src="https://drive.google.com/thumbnail?id=1b8v80IfvGNFsoPcvaPPXrPyTrhORYtRC&sz=w600" alt="CRODT-UABC" style="height:38px;width:auto;object-fit:contain;display:block;margin:0 auto" onerror="this.parentNode.innerHTML='⚡ CRODT';this.parentNode.style.background='linear-gradient(135deg,var(--blue),var(--cyan))';this.parentNode.style.webkitBackgroundClip='text';this.parentNode.style.webkitTextFillColor='transparent';this.parentNode.style.padding='1.2rem 1.5rem'"></div>
+  <div class="sidebar-nav">
+    <div class="nav-item active" onclick="showSection('participantes',this)"><span class="nav-icon">👩🏽‍👨🏻‍👧🏼‍🧒🏾</span><span>Participantes</span></div>
+    <div class="nav-item" onclick="showSection('equipos',this)"><span class="nav-icon">🤖</span><span>Equipos</span></div>
+    <div class="nav-item" onclick="showSection('eventos',this)"><span class="nav-icon">📅</span><span>Eventos</span></div>
+    <div class="nav-item" onclick="showSection('inscripciones',this)"><span class="nav-icon">📋</span><span>Inscripciones</span></div>
+  </div>
+  <div class="sidebar-user">
+    <div class="user-name" id="sideNombre">Cargando...</div>
+    <div class="user-role">Coach</div>
+    <button class="btn-logout" onclick="doLogout()">Cerrar sesión</button>
+  </div>
+</nav>
+
+<main class="main">
+
+  <!-- PARTICIPANTES -->
+  <div class="section active" id="sec-participantes">
+    <div class="page-header"><h1>Mis Participantes</h1><p>Gestiona los alumnos a tu cargo</p></div>
+    <div class="mini-stats">
+      <div class="mini-stat"><div class="mn" id="cntParts">-</div><div class="ml">Participantes</div></div>
+      <div class="mini-stat"><div class="mn" id="cntEquipos">-</div><div class="ml">Equipos</div></div>
+      <div class="mini-stat"><div class="mn" id="cntIns">-</div><div class="ml">Inscripciones</div></div>
+    </div>
+    <div class="toolbar">
+      <input class="search" placeholder="Buscar participante..." oninput="filterTable('tblParts',this.value)">
+      <button class="btn btn-blue" onclick="openAddPartModal()">+ Agregar participante</button>
+    </div>
+    <div class="table-wrap">
+      <table id="tblParts">
+        <thead><tr><th>Nombre</th><th>Correo</th><th>Edad</th><th>Escolaridad</th><th>Equipo</th><th>Acciones</th></tr></thead>
+        <tbody id="tbodyParts"><tr><td colspan="6" class="empty">Cargando...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- EQUIPOS -->
+  <div class="section" id="sec-equipos">
+    <div class="page-header"><h1>Mis Equipos</h1><p>Crea y administra equipos de competencia</p></div>
+    <div class="toolbar">
+      <input class="search" placeholder="Buscar equipo..." oninput="filterTable('tblEqs',this.value)">
+      <button class="btn btn-blue" onclick="openEqModal()">+ Crear equipo</button>
+    </div>
+    <div class="table-wrap">
+      <table id="tblEqs">
+        <thead><tr><th>Equipo</th><th>Inscripciones</th><th>Integrantes</th><th>Creado</th><th>Acciones</th></tr></thead>
+        <tbody id="tbodyEqs"><tr><td colspan="5" class="empty">Cargando...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- EVENTOS -->
+  <div class="section" id="sec-eventos">
+    <div class="page-header"><h1>Eventos Disponibles</h1><p>Eventos activos en los que puedes inscribir tus equipos</p></div>
+    <div class="events-grid" id="eventsGrid"><p style="color:var(--muted);padding:1rem">Cargando eventos...</p></div>
+  </div>
+
+  <!-- INSCRIPCIONES -->
+  <div class="section" id="sec-inscripciones">
+    <div class="page-header"><h1>Mis Inscripciones</h1><p>Estado de inscripciones de tus equipos</p></div>
+    <div class="toolbar">
+      <input class="search" placeholder="Buscar..." oninput="filterTable('tblInsC',this.value)">
+    </div>
+    <div class="table-wrap">
+      <table id="tblInsC">
+        <thead><tr><th>Equipo</th><th>Evento</th><th>Categoría</th><th>Fecha</th><th>Estado</th><th>Evidencia</th><th>Acciones</th></tr></thead>
+        <tbody id="tbodyInsC"><tr><td colspan="7" class="empty">Cargando...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+</main>
+
+<!-- MODAL: AGREGAR PARTICIPANTE (búsqueda usuarios + crear nuevo) -->
+<div class="overlay" id="addPartOverlay" onclick="closeBg(event,'addPartOverlay')">
+  <div class="modal" style="max-width:560px">
+    <button class="modal-x" onclick="closeModal('addPartOverlay')">✕</button>
+    <div class="modal-title">Agregar participante</div>
+    <div class="alert-inline alert-error-i" id="addPartAlert"></div>
+    <div class="alert-inline alert-ok-i" id="addPartOkAlert"></div>
+
+    <div style="font-size:.82rem;color:var(--muted);margin-bottom:.6rem">Busca un usuario ya registrado en la plataforma:</div>
+    <div class="form-group">
+      <input type="text" id="searchUserInput" placeholder="Nombre, correo o institución..." oninput="onSearchUserInput()">
+    </div>
+    <div id="searchUserResults" style="max-height:240px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;padding:.4rem;background:var(--bg);min-height:90px">
+      <p style="color:var(--muted);font-size:.82rem;padding:.5rem;margin:0">Escribe para buscar usuarios registrados…</p>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:.6rem;margin:1.2rem 0 .6rem">
+      <div style="flex:1;height:1px;background:var(--border)"></div>
+      <span style="font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">o</span>
+      <div style="flex:1;height:1px;background:var(--border)"></div>
+    </div>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:.6rem;flex-wrap:wrap">
+      <div style="font-size:.82rem;color:var(--muted)">¿No encuentras al participante? Créalo desde cero:</div>
+      <button class="btn btn-ghost" onclick="closeModal('addPartOverlay'); openPartModal();">+ Crear nuevo participante</button>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('addPartOverlay')">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PARTICIPANTE -->
+<div class="overlay" id="partOverlay" onclick="closeBg(event,'partOverlay')">
+  <div class="modal">
+    <button class="modal-x" onclick="closeModal('partOverlay')">✕</button>
+    <div class="modal-title" id="partModalTitle">Nuevo participante</div>
+    <div class="alert-inline alert-error-i" id="partAlert"></div>
+    <div class="alert-inline alert-ok-i" id="partOkAlert"></div>
+    <input type="hidden" id="partId">
+    <div class="row2">
+      <div class="form-group"><label>Nombre *</label><input type="text" id="pNombre" required></div>
+      <div class="form-group"><label>Apellido *</label><input type="text" id="pApellido" required></div>
+    </div>
+    <div class="form-group"><label>Correo *</label><input type="email" id="pCorreo" required></div>
+    <div class="row2">
+      <div class="form-group"><label>Edad</label><input type="number" id="pEdad" min="5" max="30"></div>
+      <div class="form-group"><label>Escolaridad</label><input type="text" id="pEscolaridad" placeholder="Preparatoria, Universidad..."></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('partOverlay')">Cancelar</button>
+      <button class="btn btn-blue" id="btnSavePart" onclick="saveParticipante()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EQUIPO -->
+<div class="overlay" id="eqOverlay" onclick="closeBg(event,'eqOverlay')">
+  <div class="modal">
+    <button class="modal-x" onclick="closeModal('eqOverlay')">✕</button>
+    <div class="modal-title" id="eqModalTitle">Crear equipo</div>
+    <div class="alert-inline alert-error-i" id="eqAlert"></div>
+    <input type="hidden" id="eqId">
+    <div class="form-group"><label>Nombre del equipo *</label><input type="text" id="eqNombre" placeholder="CimarronBots 2026"></div>
+    <div class="form-group">
+      <label>Integrantes del equipo</label>
+      <div class="check-list" id="partCheckList"><p style="color:var(--muted);font-size:.82rem;padding:.3rem">Cargando participantes...</p></div>
+      <p style="font-size:.75rem;color:var(--muted);margin-top:.4rem">Las categorías se eligen al inscribir el equipo en un evento.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('eqOverlay')">Cancelar</button>
+      <button class="btn btn-blue" id="btnSaveEquipo" onclick="saveEquipo()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL INSCRIBIR EQUIPO -->
+<div class="overlay" id="insOverlay" onclick="closeBg(event,'insOverlay')">
+  <div class="modal" style="max-width:480px">
+    <button class="modal-x" onclick="closeModal('insOverlay')">✕</button>
+    <div class="modal-title" id="insModalTitle">Inscribir equipo</div>
+    <div class="alert-inline alert-error-i" id="insAlert"></div>
+    <input type="hidden" id="insEventoId">
+    <div class="form-group">
+      <label>Equipo a inscribir</label>
+      <select id="insEquipoSel" onchange="rebuildInsCatChips()"></select>
+    </div>
+    <div class="form-group">
+      <label>Categorías en las que participará *</label>
+      <div class="chip-list" id="insCatChips" style="display:flex;flex-wrap:wrap;gap:.4rem"></div>
+      <p style="font-size:.75rem;color:var(--muted);margin-top:.4rem">Selecciona una o más categorías disponibles en este evento.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('insOverlay')">Cancelar</button>
+      <button class="btn btn-blue" id="btnInscribirConfirm" onclick="doInscribir()">Inscribir</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EVIDENCIA -->
+<div class="overlay" id="evidOverlay" onclick="closeBg(event,'evidOverlay')">
+  <div class="modal" style="max-width:400px">
+    <button class="modal-x" onclick="closeModal('evidOverlay')">✕</button>
+    <div class="modal-title">Subir evidencia / documento</div>
+    <div class="alert-inline alert-error-i" id="evidAlert"></div>
+    <input type="hidden" id="evidInsId">
+    <div class="form-group"><label>URL del documento (Google Drive, PDF, etc.)</label><input type="url" id="evidUrl" placeholder="https://drive.google.com/..."></div>
+    <p style="font-size:.78rem;color:var(--muted);margin-bottom:.5rem">Sube tu documento a Google Drive y comparte el enlace con permisos de visualización.</p>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('evidOverlay')">Cancelar</button>
+      <button class="btn btn-blue" id="btnSubirEvid" onclick="doSubirEvidencia()">Guardar URL</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var TOKEN = '<?= token ?>';
+var NOMBRE = 'Coach';
+var APP_URL = '';
+var allParticipantes = [];  // solo los del coach (tab)
+var allParticipantesDisponibles = [];  // todos registrados (modal equipo)
+var allEquipos = [];
+var allCategorias = [];
+
+// ===== CACHÉ CLIENTE (instant tab-switch) =====
+var _panel = {};
+var _panelTs = {};
+var _PANEL_TTL = 30000;
+function _fresh(k){ return _panel[k] && (Date.now() - (_panelTs[k]||0) < _PANEL_TTL); }
+function _setPanel(k, res){ if(res){ _panel[k]=res; _panelTs[k]=Date.now(); } }
+
+google.script.run.withSuccessHandler(function(res){
+  if(!res.valid || res.rol !== 'coach'){ redirectLogin(); return; }
+  NOMBRE = res.nombre || 'Coach';
+  document.getElementById('sideNombre').textContent = NOMBRE;
+
+  google.script.run.withSuccessHandler(function(p){
+    if (p && p.success) {
+      _setPanel('participantes', p.participantes);
+      _setPanel('equipos', p.equipos);
+      _setPanel('eventos', p.eventos);
+      _setPanel('inscripciones', p.inscripciones);
+      _setPanel('categorias', p.categorias);
+      if (p.participantes && p.participantes.success) allParticipantes = p.participantes.data || [];
+      if (p.equipos && p.equipos.success) allEquipos = p.equipos.data || [];
+      if (p.categorias && p.categorias.success) allCategorias = p.categorias.data || [];
+      // Pre-llenar contadores de las mini-stats aunque no se haya entrado a esas pestañas
+      var elE = document.getElementById('cntEquipos');
+      if (elE && p.equipos && p.equipos.success) elE.textContent = (p.equipos.data || []).length;
+      var elI = document.getElementById('cntIns');
+      if (elI && p.inscripciones && p.inscripciones.success) elI.textContent = (p.inscripciones.data || []).length;
+    }
+    loadParticipantes();
+    loadCategorias();
+  }).withFailureHandler(function(){
+    loadParticipantes(); loadCategorias();
+  }).cargarPanelCoach(TOKEN);
+}).withFailureHandler(redirectLogin).verificarSesion(TOKEN);
+
+google.script.run.withSuccessHandler(function(url){ APP_URL=url; }).getAppUrl();
+
+function redirectLogin(){ var base=window.location.href.split('?')[0]; if(APP_URL) window.location.href=APP_URL; else window.location.href=base; }
+
+function showSection(id, el){
+  document.querySelectorAll('.section').forEach(function(s){ s.classList.remove('active'); });
+  document.querySelectorAll('.nav-item').forEach(function(n){ n.classList.remove('active'); });
+  document.getElementById('sec-'+id).classList.add('active');
+  el.classList.add('active');
+  var loaders = { participantes: loadParticipantes, equipos: loadEquipos, eventos: loadEventos, inscripciones: loadInscripciones };
+  if(loaders[id]) loaders[id]();
+}
+function doLogout(){ google.script.run.withSuccessHandler(function(){ sessionStorage.clear(); redirectLogin(); }).cerrarSesion(TOKEN); }
+function openModal(id){ document.getElementById(id).classList.add('show'); }
+function closeModal(id){ document.getElementById(id).classList.remove('show'); }
+function closeBg(e,id){ if(e.target===document.getElementById(id)) closeModal(id); }
+function _norm(s){ return String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\s+/g,' ').trim(); }
+function filterTable(tid,q){
+  var tokens = _norm(q).split(' ').filter(function(t){ return t.length>0; });
+  document.getElementById(tid).querySelectorAll('tbody tr').forEach(function(r){
+    if(!tokens.length){ r.style.display=''; return; }
+    var hay = _norm(r.textContent);
+    var match = true;
+    for(var i=0;i<tokens.length;i++){ if(hay.indexOf(tokens[i])===-1){ match=false; break; } }
+    r.style.display = match ? '' : 'none';
+  });
+}
+function fmtDate(d){
+  if(!d) return '-';
+  try{
+    if(typeof d==='string'){
+      var m=d.match(/^(\d{4})-(\d{2})-(\d{2})/);
+      if(m) return m[3]+'/'+m[2]+'/'+m[1];
+    }
+    var dt=new Date(d);
+    var dd=('0'+dt.getDate()).slice(-2), mm=('0'+(dt.getMonth()+1)).slice(-2), yy=dt.getFullYear();
+    return dd+'/'+mm+'/'+yy;
+  }catch(e){ return d; }
+}
+function stateBadge(s){ var map={pendiente:'badge-yellow',en_revision:'badge-blue',aprobada:'badge-green',rechazada:'badge-red'}; return '<span class="badge '+(map[s]||'badge-gray')+'">'+s+'</span>'; }
+function showModalAlert(id,msg,type){ var el=document.getElementById(id); el.textContent=msg; el.className='alert-inline '+(type==='ok'?'alert-ok-i':'alert-error-i')+' show'; }
+function hideModalAlerts(){ ['partAlert','partOkAlert','eqAlert','insAlert','evidAlert','addPartAlert','addPartOkAlert'].forEach(function(id){ var el=document.getElementById(id); if(el) el.className=el.className.replace(' show',''); }); }
+function escAttr(s){ return String(s||'').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+function escHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ---- PARTICIPANTES ----
+function _renderParticipantes(res){
+  if(!res || !res.success){ document.getElementById('tbodyParts').innerHTML='<tr><td colspan="6" class="empty">Error: '+((res&&res.error)||'desconocido')+'</td></tr>'; return; }
+  allParticipantes = res.data;
+  document.getElementById('cntParts').textContent = res.data.length;
+  if(!res.data.length){ document.getElementById('tbodyParts').innerHTML='<tr><td colspan="6" class="empty">Sin participantes. Agrega el primero.</td></tr>'; return; }
+  document.getElementById('tbodyParts').innerHTML = res.data.map(function(p){
+    var teamBadge = p.enEquipo
+      ? '<span class="badge badge-green">Asignado</span>'
+      : '<span class="badge badge-gray">Sin equipo</span>';
+    var pJson = JSON.stringify(p).replace(/'/g,"&#39;");
+    return '<tr>'
+      + '<td><strong>'+escHtml(p.nombre)+' '+escHtml(p.apellido)+'</strong></td>'
+      + '<td>'+escHtml(p.correo)+'</td>'
+      + '<td>'+(p.edad||'-')+'</td>'
+      + '<td>'+escHtml(p.escolaridad||'-')+'</td>'
+      + '<td>'+teamBadge+'</td>'
+      + '<td>'
+      +   '<button class="btn btn-ghost btn-sm" onclick=\'editPart('+pJson+')\'>Editar</button> '
+      +   '<button class="btn btn-danger btn-sm" onclick="delPart(\''+p.idParticipante+'\')">Eliminar</button>'
+      + '</td></tr>';
+  }).join('');
+}
+function loadParticipantes(forceFresh){
+  if(!forceFresh && _fresh('participantes')){ _renderParticipantes(_panel.participantes); return; }
+  document.getElementById('tbodyParts').innerHTML='<tr><td colspan="6" class="empty">Cargando...</td></tr>';
+  google.script.run
+    .withSuccessHandler(function(res){ _setPanel('participantes', res); _renderParticipantes(res); })
+    .withFailureHandler(function(err){
+      document.getElementById('tbodyParts').innerHTML='<tr><td colspan="6" class="empty">Error: '+(err.message||err)+'</td></tr>';
+    })
+    .obtenerParticipantes(TOKEN);
+}
+
+// ---- MODAL: AGREGAR PARTICIPANTE (búsqueda + crear) ----
+var _searchUserTimer = null;
+function openAddPartModal(){
+  hideModalAlerts();
+  document.getElementById('searchUserInput').value='';
+  document.getElementById('searchUserResults').innerHTML='<p style="color:var(--muted);font-size:.82rem;padding:.5rem;margin:0">Escribe para buscar usuarios registrados…</p>';
+  openModal('addPartOverlay');
+  setTimeout(function(){ document.getElementById('searchUserInput').focus(); }, 50);
+}
+
+function onSearchUserInput(){
+  if(_searchUserTimer) clearTimeout(_searchUserTimer);
+  var q = document.getElementById('searchUserInput').value.trim();
+  var results = document.getElementById('searchUserResults');
+  if(!q){
+    results.innerHTML='<p style="color:var(--muted);font-size:.82rem;padding:.5rem;margin:0">Escribe para buscar usuarios registrados…</p>';
+    return;
+  }
+  results.innerHTML='<p style="color:var(--muted);font-size:.82rem;padding:.5rem;margin:0">Buscando…</p>';
+  _searchUserTimer = setTimeout(function(){ doSearchUsers(q); }, 250);
+}
+
+function doSearchUsers(q){
+  google.script.run.withSuccessHandler(function(res){
+    var results = document.getElementById('searchUserResults');
+    if(!res || !res.success){ results.innerHTML='<p style="color:var(--error);font-size:.82rem;padding:.5rem;margin:0">'+((res&&res.error)||'Error')+'</p>'; return; }
+    if(!res.data.length){ results.innerHTML='<p style="color:var(--muted);font-size:.82rem;padding:.5rem;margin:0">Sin coincidencias.</p>'; return; }
+    results.innerHTML = res.data.map(function(u){
+      var inst = u.institucion ? ' · '+escHtml(u.institucion) : '';
+      return '<div style="display:flex;align-items:center;justify-content:space-between;gap:.6rem;padding:.5rem .6rem;border-radius:6px;cursor:default" onmouseover="this.style.background=\'rgba(59,130,246,.07)\'" onmouseout="this.style.background=\'transparent\'">'
+        + '<div style="min-width:0;flex:1">'
+        +   '<div style="font-size:.88rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+escHtml(u.nombre||u.correo)+'</div>'
+        +   '<div style="font-size:.74rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+escHtml(u.correo)+inst+'</div>'
+        + '</div>'
+        + '<button class="btn btn-blue btn-sm" onclick="addExistingUser(\''+escAttr(u.correo)+'\', this)">+ Agregar</button>'
+        + '</div>';
+    }).join('');
+  }).withFailureHandler(function(e){
+    document.getElementById('searchUserResults').innerHTML='<p style="color:var(--error);font-size:.82rem;padding:.5rem;margin:0">Error: '+(e.message||e)+'</p>';
+  }).buscarUsuariosDisponibles(TOKEN, q);
+}
+
+function addExistingUser(correo, btn){
+  if(btn.disabled) return;
+  btn.disabled=true; btn.textContent='Agregando…';
+  google.script.run.withSuccessHandler(function(res){
+    if(!res || !res.success){ btn.disabled=false; btn.textContent='+ Agregar'; showModalAlert('addPartAlert',(res&&res.error)||'Error'); return; }
+    showModalAlert('addPartOkAlert', res.reasignado ? 'Participante reasignado a tu equipo.' : 'Participante agregado correctamente.', 'ok');
+    btn.textContent='✓ Agregado'; btn.classList.remove('btn-blue'); btn.classList.add('btn-success');
+    loadParticipantes(true);
+    // Refresca búsqueda para que ya no aparezca
+    setTimeout(function(){ var q=document.getElementById('searchUserInput').value.trim(); if(q) doSearchUsers(q); }, 600);
+  }).withFailureHandler(function(e){
+    btn.disabled=false; btn.textContent='+ Agregar';
+    showModalAlert('addPartAlert', e.message||e);
+  }).agregarParticipanteExistente(TOKEN, correo);
+}
+
+function openPartModal(){
+  hideModalAlerts();
+  document.getElementById('partId').value=''; document.getElementById('partModalTitle').textContent='Nuevo participante';
+  document.getElementById('pNombre').value=''; document.getElementById('pApellido').value='';
+  document.getElementById('pCorreo').value=''; document.getElementById('pEdad').value='';
+  document.getElementById('pEscolaridad').value='';
+  document.getElementById('pCorreo').disabled=false;
+  openModal('partOverlay');
+}
+
+function editPart(p){
+  hideModalAlerts();
+  document.getElementById('partModalTitle').textContent='Editar participante';
+  document.getElementById('partId').value=p.idParticipante;
+  document.getElementById('pNombre').value=p.nombre;
+  document.getElementById('pApellido').value=p.apellido;
+  document.getElementById('pCorreo').value=p.correo;
+  document.getElementById('pCorreo').disabled=true;
+  document.getElementById('pEdad').value=p.edad||'';
+  document.getElementById('pEscolaridad').value=p.escolaridad||'';
+  openModal('partOverlay');
+}
+
+function saveParticipante(){
+  var btn = document.getElementById('btnSavePart');
+  if(btn && btn.disabled) return;
+  var id = document.getElementById('partId').value;
+  var data = { idParticipante:id, nombre:document.getElementById('pNombre').value.trim(), apellido:document.getElementById('pApellido').value.trim(), correo:document.getElementById('pCorreo').value.trim(), edad:document.getElementById('pEdad').value, escolaridad:document.getElementById('pEscolaridad').value.trim() };
+  if(!data.nombre||!data.apellido||!data.correo){ showModalAlert('partAlert','Nombre, apellido y correo son requeridos'); return; }
+  if(btn){ btn.disabled = true; btn.textContent = 'Guardando...'; }
+  var fn = id ? 'editarParticipante' : 'registrarParticipante';
+  google.script.run.withSuccessHandler(function(res){
+    if(btn){ btn.disabled = false; btn.textContent = 'Guardar'; }
+    if(!res.success){ showModalAlert('partAlert',res.error); return; }
+    closeModal('partOverlay'); loadParticipantes(true);
+  }).withFailureHandler(function(e){ if(btn){ btn.disabled = false; btn.textContent = 'Guardar'; } showModalAlert('partAlert',e.message); })[fn](TOKEN,data);
+}
+
+function delPart(id){
+  if(!confirm('¿Eliminar este participante? Esta acción no se puede deshacer.')) return;
+  google.script.run.withSuccessHandler(function(res){ if(!res.success){ alert(res.error); return; } loadParticipantes(true); }).eliminarParticipante(TOKEN,id);
+}
+
+// ---- CATEGORÍAS ----
+function _renderCategoriasSelect(res){
+  if(!res || !res.success) return;
+  allCategorias = res.data;
+}
+function loadCategorias(forceFresh){
+  if(!forceFresh && _fresh('categorias')){ _renderCategoriasSelect(_panel.categorias); return; }
+  google.script.run.withSuccessHandler(function(res){ _setPanel('categorias', res); _renderCategoriasSelect(res); }).obtenerCategorias();
+}
+
+// ---- EQUIPOS ----
+function _renderEquipos(res){
+  if(!res || !res.success){ document.getElementById('tbodyEqs').innerHTML='<tr><td colspan="5" class="empty">Error: '+((res&&res.error)||'desconocido')+'</td></tr>'; return; }
+  allEquipos = res.data;
+  document.getElementById('cntEquipos').textContent=res.data.length;
+  if(!res.data.length){ document.getElementById('tbodyEqs').innerHTML='<tr><td colspan="5" class="empty">Sin equipos. Crea el primero.</td></tr>'; return; }
+  document.getElementById('tbodyEqs').innerHTML = res.data.map(function(e){
+    var mbs = (e.miembros||[]).map(function(m){ return m.nombre+' '+m.apellido; }).join(', ')||'—';
+    var insCats = (misInscripciones||[])
+      .filter(function(i){ return String(i.idEquipo)===String(e.idEquipo); })
+      .map(function(i){ return i.categoria; })
+      .filter(function(v,idx,arr){ return v && arr.indexOf(v)===idx; });
+    var insCell = insCats.length ? insCats.map(function(c){ return '<span class="event-cat">'+c+'</span>'; }).join(' ') : '<span style="color:var(--muted);font-size:.78rem">Sin inscripciones</span>';
+    return '<tr><td><strong>'+e.nombreEquipo+'</strong><br><small style="color:var(--muted)">'+e.idEquipo+'</small></td>'
+      +'<td><div style="display:flex;flex-wrap:wrap;gap:.25rem">'+insCell+'</div></td>'
+      +'<td style="font-size:.8rem;color:var(--muted)">'+mbs+'</td>'
+      +'<td>'+fmtDate(e.fechaCreacion)+'</td>'
+      +'<td><button class="btn btn-ghost btn-sm" onclick=\'editEq('+JSON.stringify(e)+')\'>Editar</button> '
+      +'<button class="btn btn-danger btn-sm" onclick="delEq(\''+e.idEquipo+'\')">Eliminar</button></td></tr>';
+  }).join('');
+}
+function loadEquipos(forceFresh){
+  if(!forceFresh && _fresh('equipos')){ _renderEquipos(_panel.equipos); return; }
+  document.getElementById('tbodyEqs').innerHTML='<tr><td colspan="5" class="empty">Cargando...</td></tr>';
+  google.script.run
+    .withSuccessHandler(function(res){ _setPanel('equipos', res); _renderEquipos(res); })
+    .withFailureHandler(function(err){
+      document.getElementById('tbodyEqs').innerHTML='<tr><td colspan="5" class="empty">Error al cargar equipos: '+(err.message||err)+'</td></tr>';
+    })
+    .obtenerEquipos(TOKEN);
+}
+
+function openEqModal(){
+  hideModalAlerts();
+  document.getElementById('eqId').value=''; document.getElementById('eqModalTitle').textContent='Crear equipo';
+  document.getElementById('eqNombre').value='';
+  document.getElementById('partCheckList').innerHTML='<p style="color:var(--muted);font-size:.82rem;padding:.3rem">Cargando tus participantes...</p>';
+  google.script.run.withSuccessHandler(function(res){
+    if(res && res.success){ allParticipantesDisponibles=res.data; }
+    buildPartChecks([]);
+  }).obtenerParticipantes(TOKEN);
+  openModal('eqOverlay');
+}
+
+function editEq(eq){
+  hideModalAlerts();
+  document.getElementById('eqModalTitle').textContent='Editar equipo';
+  document.getElementById('eqId').value=eq.idEquipo;
+  document.getElementById('eqNombre').value=eq.nombreEquipo;
+  var selIds = eq.miembros.map(function(m){ return m.idParticipante; });
+  document.getElementById('partCheckList').innerHTML='<p style="color:var(--muted);font-size:.82rem;padding:.3rem">Cargando tus participantes...</p>';
+  google.script.run.withSuccessHandler(function(res){
+    if(res && res.success){ allParticipantesDisponibles=res.data; }
+    buildPartChecks(selIds);
+  }).obtenerParticipantes(TOKEN);
+  openModal('eqOverlay');
+}
+
+function buildPartChecks(selectedIds){
+  if(!allParticipantesDisponibles.length){
+    document.getElementById('partCheckList').innerHTML='<p style="color:var(--muted);font-size:.82rem;padding:.3rem">Aún no tienes participantes. Agrega uno desde la pestaña <strong>Participantes</strong>.</p>';
+    return;
+  }
+  document.getElementById('partCheckList').innerHTML = allParticipantesDisponibles.map(function(p){
+    var chk = selectedIds.includes(p.idParticipante) ? ' checked' : '';
+    return '<label class="check-item"><input type="checkbox" value="'+p.idParticipante+'"'+chk+'> '+p.nombre+' '+p.apellido+'</label>';
+  }).join('');
+}
+
+function saveEquipo(){
+  var id = document.getElementById('eqId').value;
+  var miembros = Array.from(document.querySelectorAll('#partCheckList input:checked')).map(function(c){ return c.value; });
+  var data = { idEquipo:id||null, nombreEquipo:document.getElementById('eqNombre').value.trim(), idCategoria:'', miembros:miembros };
+  if(!data.nombreEquipo){ showModalAlert('eqAlert','El nombre del equipo es requerido'); return; }
+  var btn = document.getElementById('btnSaveEquipo');
+  if(btn.disabled) return;
+  btn.disabled = true; btn.textContent = 'Guardando...';
+  var fn = id ? 'editarEquipo' : 'crearEquipo';
+  google.script.run.withSuccessHandler(function(res){
+    btn.disabled = false; btn.textContent = 'Guardar';
+    if(!res || !res.success){ showModalAlert('eqAlert',(res && res.error)||'Error'); return; }
+    closeModal('eqOverlay'); loadEquipos(true);
+  }).withFailureHandler(function(e){
+    btn.disabled = false; btn.textContent = 'Guardar';
+    showModalAlert('eqAlert',e.message);
+  })[fn](TOKEN,data);
+}
+
+function delEq(id){
+  if(!confirm('¿Eliminar este equipo?')) return;
+  google.script.run.withSuccessHandler(function(res){ if(!res.success){ alert(res.error); return; } loadEquipos(true); }).eliminarEquipo(TOKEN,id);
+}
+
+// ---- EVENTOS ----
+var misInscripciones = [];
+function _renderEventos(eventosRes){
+  if(!eventosRes || !eventosRes.success){ document.getElementById('eventsGrid').innerHTML='<p style="color:var(--error);padding:1rem">'+((eventosRes&&eventosRes.error)||'Error')+'</p>'; return; }
+  // Filtrar a eventos activos (el bundled trae todos)
+  var activos = (eventosRes.data||[]).filter(function(e){ return !e.estado || String(e.estado).toLowerCase()==='activo'; });
+  if(!activos.length){ document.getElementById('eventsGrid').innerHTML='<p style="color:var(--muted);padding:1rem">Sin eventos activos actualmente.</p>'; return; }
+  document.getElementById('eventsGrid').innerHTML = activos.map(function(ev){
+    var insEv = misInscripciones.filter(function(i){ return String(i.idEvento)===String(ev.idEvento); });
+    var totalCats = (ev.categorias||[]).length;
+    // Mapa equipo → set(catNombre lowercase) inscritas en este evento
+    var inscPorEq = {};
+    insEv.forEach(function(i){
+      var k = String(i.idEquipo||'');
+      if(!inscPorEq[k]) inscPorEq[k] = {};
+      inscPorEq[k][String(i.categoria||'').toLowerCase()] = true;
+    });
+    var inscritasCats = insEv.map(function(i){ return String(i.categoria||'').toLowerCase(); });
+    var cats = (ev.categorias||[]).map(function(c){
+      var done = inscritasCats.indexOf(String(c.nombre).toLowerCase())!==-1;
+      return '<span class="event-cat"'+(done?' style="opacity:.7"':'')+'>'+c.nombre+(done?' ✓':'')+'</span>';
+    }).join('');
+    // Equipos del coach con al menos una categoría aún disponible en este evento
+    var disponibles = allEquipos.filter(function(e){
+      var setEq = inscPorEq[String(e.idEquipo)] || {};
+      var libres = (ev.categorias||[]).filter(function(c){ return !setEq[String(c.nombre).toLowerCase()]; });
+      return libres.length > 0;
+    });
+    var btn;
+    if (!allEquipos.length) {
+      btn = '<button class="btn btn-blue btn-sm" disabled style="width:100%;opacity:.55;cursor:not-allowed">Aún no tienes equipos — crea uno primero</button>';
+    } else if (!totalCats) {
+      btn = '<button class="btn btn-blue btn-sm" disabled style="width:100%;opacity:.55;cursor:not-allowed">Sin categorías configuradas</button>';
+    } else if (disponibles.length) {
+      btn = '<button class="btn btn-blue btn-sm" onclick="openInsModal(\''+ev.idEvento+'\',\''+ev.nombreEvento.replace(/'/g,"\\'")+'\')" style="width:100%">Inscribir equipo</button>';
+    } else {
+      btn = '<button class="btn btn-blue btn-sm" disabled style="width:100%;opacity:.55;cursor:not-allowed">Todos tus equipos ya inscritos en todas las categorías</button>';
+    }
+    return '<div class="event-card"><div class="event-title">'+ev.nombreEvento+'</div>'
+      +'<div class="event-meta">📅 '+fmtDate(ev.fechaInicio)+' – '+fmtDate(ev.fechaFin)+'<br>📍 '+(ev.ubicacion||'-')+'</div>'
+      +'<div class="event-cats">'+cats+'</div>'
+      +btn+'</div>';
+  }).join('');
+}
+function loadEventos(forceFresh){
+  if(!forceFresh && _fresh('eventos') && _fresh('inscripciones') && _fresh('equipos')){
+    if (_panel.equipos && _panel.equipos.success) allEquipos = _panel.equipos.data || [];
+    if (_panel.inscripciones && _panel.inscripciones.success) misInscripciones = _panel.inscripciones.data || [];
+    _renderEventos(_panel.eventos);
+    return;
+  }
+  document.getElementById('eventsGrid').innerHTML='<p style="color:var(--muted);padding:1rem">Cargando...</p>';
+  google.script.run.withSuccessHandler(function(res){ if(res && res.success){ allEquipos=res.data; _setPanel('equipos', res); } }).obtenerEquipos(TOKEN);
+  google.script.run.withSuccessHandler(function(insRes){
+    misInscripciones = (insRes && insRes.success) ? insRes.data : [];
+    _setPanel('inscripciones', insRes);
+    google.script.run.withSuccessHandler(function(res){
+      _setPanel('eventos', res);
+      _renderEventos(res);
+    }).obtenerEventos(TOKEN);
+  }).obtenerInscripcionesCoach(TOKEN);
+}
+
+var _insEventoActual = null;  // evento del modal abierto
+function openInsModal(idEvento, nombreEvento){
+  hideModalAlerts();
+  document.getElementById('insEventoId').value=idEvento;
+  document.getElementById('insModalTitle').textContent='Inscribir al evento: '+nombreEvento;
+  // Buscar el evento para conocer sus categorías permitidas
+  var ev = ((_panel.eventos && _panel.eventos.data) || []).filter(function(x){ return String(x.idEvento)===String(idEvento); })[0];
+  _insEventoActual = ev || { idEvento:idEvento, categorias:[] };
+
+  // El select muestra TODOS los equipos del coach — la disponibilidad real se evalúa por categoría
+  var sel = document.getElementById('insEquipoSel');
+  sel.innerHTML = allEquipos.length
+    ? allEquipos.map(function(e){
+        var nombres = (e.miembros||[]).map(function(m){ return ((m.nombre||'')+' '+(m.apellido||'')).trim(); }).filter(function(s){ return s; }).join(', ');
+        var label = e.nombreEquipo + (nombres ? ' ('+nombres+')' : ' (sin integrantes)');
+        return '<option value="'+e.idEquipo+'">'+label+'</option>';
+      }).join('')
+    : '<option value="">No tienes equipos creados</option>';
+  rebuildInsCatChips();
+  openModal('insOverlay');
+}
+
+function rebuildInsCatChips(){
+  var cont = document.getElementById('insCatChips');
+  var idEquipo = document.getElementById('insEquipoSel').value;
+  var idEvento = document.getElementById('insEventoId').value;
+  var cats = (_insEventoActual && _insEventoActual.categorias) || [];
+  if(!cats.length){ cont.innerHTML='<p style="color:var(--muted);font-size:.78rem">Este evento no tiene categorías configuradas.</p>'; return; }
+  // Categorías en las que el equipo ya está inscrito en este evento
+  var yaInscritas = {};
+  (misInscripciones||[])
+    .filter(function(i){ return String(i.idEvento)===String(idEvento) && String(i.idEquipo)===String(idEquipo); })
+    .forEach(function(i){ yaInscritas[String(i.idCategoria||'').toLowerCase()] = true; yaInscritas[String(i.categoria||'').toLowerCase()] = true; });
+  cont.innerHTML = cats.map(function(c){
+    var cid = String(c.idCategoria||c);
+    var nom = c.nombre||c;
+    var dis = yaInscritas[cid.toLowerCase()] || yaInscritas[String(nom).toLowerCase()];
+    var cls = 'chip'+(dis?' disabled':'');
+    var title = dis ? 'Este equipo ya está inscrito en esta categoría' : 'Clic para seleccionar';
+    var onclk = dis ? '' : ' onclick="this.classList.toggle(\'selected\')"';
+    return '<div class="'+cls+'" data-id="'+cid+'" title="'+title+'"'+onclk+'>'+nom+'</div>';
+  }).join('');
+}
+
+function doInscribir(){
+  var btn = document.getElementById('btnInscribirConfirm');
+  if(btn && btn.disabled) return;
+  var idEvento = document.getElementById('insEventoId').value;
+  var idEquipo = document.getElementById('insEquipoSel').value;
+  if(!idEquipo){ showModalAlert('insAlert','Selecciona un equipo'); return; }
+  var idCategorias = Array.from(document.querySelectorAll('#insCatChips .chip.selected')).map(function(c){ return c.dataset.id; });
+  if(!idCategorias.length){ showModalAlert('insAlert','Selecciona al menos una categoría'); return; }
+  if(btn){ btn.disabled = true; btn.textContent = 'Inscribiendo...'; }
+  google.script.run.withSuccessHandler(function(res){
+    if(btn){ btn.disabled = false; btn.textContent = 'Inscribir'; }
+    if(!res.success){ showModalAlert('insAlert',res.error); return; }
+    closeModal('insOverlay');
+    var n = (res.creadas != null) ? res.creadas : idCategorias.length;
+    alert('¡Equipo inscrito en '+n+' categoría(s)!');
+    loadInscripciones(true);
+    loadEquipos(true);
+    loadEventos(true);
+  }).withFailureHandler(function(e){ if(btn){ btn.disabled = false; btn.textContent = 'Inscribir'; } showModalAlert('insAlert',e.message); }).inscribirEquipo(TOKEN,idEquipo,idEvento,idCategorias);
+}
+
+// ---- INSCRIPCIONES ----
+function _renderInscripciones(res){
+  if(!res || !res.success){ document.getElementById('tbodyInsC').innerHTML='<tr><td colspan="7" class="empty">'+((res&&res.error)||'Error')+'</td></tr>'; return; }
+  document.getElementById('cntIns').textContent=res.data.length;
+  if(!res.data.length){ document.getElementById('tbodyInsC').innerHTML='<tr><td colspan="7" class="empty">Sin inscripciones aún.</td></tr>'; return; }
+  document.getElementById('tbodyInsC').innerHTML = res.data.map(function(i){
+    var evid = i.evidenciaURL ? '<a href="'+i.evidenciaURL+'" target="_blank" style="color:var(--blue);font-size:.78rem">Ver</a>' : '-';
+    var subBtn = '<button class="btn btn-ghost btn-sm" onclick="openEvidModal(\''+i.idInscripcion+'\')">Subir</button>';
+    return '<tr><td><strong>'+i.nombreEquipo+'</strong></td><td>'+i.nombreEvento+'</td>'
+      +'<td>'+(i.categoria||'—')+'</td>'
+      +'<td>'+fmtDate(i.fechaInscripcion)+'</td><td>'+stateBadge(i.estado)+'</td>'
+      +'<td>'+evid+'</td><td>'+subBtn+'</td></tr>';
+  }).join('');
+}
+function loadInscripciones(forceFresh){
+  if(!forceFresh && _fresh('inscripciones')){ _renderInscripciones(_panel.inscripciones); return; }
+  document.getElementById('tbodyInsC').innerHTML='<tr><td colspan="7" class="empty">Cargando...</td></tr>';
+  google.script.run.withSuccessHandler(function(res){ _setPanel('inscripciones', res); _renderInscripciones(res); }).obtenerInscripcionesCoach(TOKEN);
+}
+
+function openEvidModal(idIns){
+  hideModalAlerts();
+  document.getElementById('evidInsId').value=idIns;
+  document.getElementById('evidUrl').value='';
+  openModal('evidOverlay');
+}
+
+function doSubirEvidencia(){
+  var btn = document.getElementById('btnSubirEvid');
+  if(btn && btn.disabled) return;
+  var id = document.getElementById('evidInsId').value;
+  var url = document.getElementById('evidUrl').value.trim();
+  if(!url){ showModalAlert('evidAlert','Ingresa una URL válida'); return; }
+  if(btn){ btn.disabled = true; btn.textContent = 'Guardando...'; }
+  google.script.run.withSuccessHandler(function(res){
+    if(btn){ btn.disabled = false; btn.textContent = 'Guardar URL'; }
+    if(!res.success){ showModalAlert('evidAlert',res.error); return; }
+    closeModal('evidOverlay'); loadInscripciones(true);
+  }).withFailureHandler(function(e){ if(btn){ btn.disabled = false; btn.textContent = 'Guardar URL'; } showModalAlert('evidAlert', e.message||e); }).subirEvidencia(TOKEN,id,url);
+}
+</script>
+</body>
+</html>

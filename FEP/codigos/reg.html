@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CRODIT UABC - Registro Asesor</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0a0e1a;--card:#0f1629;--border:#1e2d4a;--blue:#3b82f6;--cyan:#06b6d4;--text:#e2e8f0;--muted:#94a3b8;--error:#ef4444;--success:#10b981}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem 1rem}
+.container{width:100%;max-width:480px}
+.logo{text-align:center;font-size:1.3rem;font-weight:800;background:linear-gradient(135deg,var(--blue),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:2rem}
+.card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:2rem}
+h2{font-size:1.3rem;font-weight:700;margin-bottom:.4rem}
+.subtitle{font-size:.85rem;color:var(--muted);margin-bottom:1.5rem}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.form-group{margin-bottom:1rem}
+label{display:block;font-size:.8rem;color:var(--muted);margin-bottom:.35rem;font-weight:500}
+input,select{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:.65rem .9rem;color:var(--text);font-size:.9rem;outline:none;transition:border-color .2s}
+input:focus,select:focus{border-color:var(--blue)}
+.hint{font-size:.75rem;color:var(--muted);margin-top:.25rem}
+.btn{width:100%;background:var(--blue);color:#fff;border:none;padding:.8rem;border-radius:10px;cursor:pointer;font-size:.95rem;font-weight:600;margin-top:.5rem;transition:background .2s}.btn:hover{background:#2563eb}.btn:disabled{opacity:.6;cursor:default}
+.alert{padding:.65rem 1rem;border-radius:8px;font-size:.85rem;margin-bottom:1rem;display:none}
+.alert-error{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);color:#fca5a5}
+.alert-success{background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.3);color:#6ee7b7}
+.show{display:block !important}
+.footer-link{text-align:center;margin-top:1.2rem;font-size:.82rem;color:var(--muted)}
+.footer-link a{color:var(--blue);text-decoration:none}.footer-link a:hover{text-decoration:underline}
+@media(max-width:480px){.row{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="logo" style="margin-bottom:2rem"><img src="https://drive.google.com/thumbnail?id=1b8v80IfvGNFsoPcvaPPXrPyTrhORYtRC&sz=w600" alt="CRODT-UABC" style="height:50px;width:auto;object-fit:contain;display:block;margin:0 auto" onerror="this.parentNode.innerHTML='⚡ CRODT UABC';this.parentNode.style.background='linear-gradient(135deg,var(--blue),var(--cyan))';this.parentNode.style.webkitBackgroundClip='text';this.parentNode.style.webkitTextFillColor='transparent'"></div>
+  <div class="card">
+    <h2>Registro de Coach</h2>
+    <p class="subtitle">Crea tu cuenta para gestionar participantes y equipos</p>
+
+    <div class="alert alert-error" id="errAlert"></div>
+    <div class="alert alert-success" id="okAlert"></div>
+
+    <form id="regForm" onsubmit="doRegister(event)">
+      <div class="row">
+        <div class="form-group">
+          <label>Nombre *</label>
+          <input type="text" id="rNombre" required placeholder="Juan">
+        </div>
+        <div class="form-group">
+          <label>Apellido *</label>
+          <input type="text" id="rApellido" required placeholder="Pérez">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Correo electrónico *</label>
+        <input type="email" id="rCorreo" required placeholder="coach@institucion.edu">
+      </div>
+      <div class="form-group">
+        <label>Institución educativa *</label>
+        <input type="text" id="rInstitucion" required placeholder="UNAM, IPN, TEC...">
+      </div>
+      <div class="form-group">
+        <label>Teléfono</label>
+        <input type="text" id="rTelefono" placeholder="(opcional)">
+      </div>
+      <div class="row">
+        <div class="form-group">
+          <label>Contraseña *</label>
+          <input type="password" id="rPass" required placeholder="••••••••" minlength="6">
+        </div>
+        <div class="form-group">
+          <label>Confirmar contraseña *</label>
+          <input type="password" id="rPass2" required placeholder="••••••••">
+        </div>
+      </div>
+      <div class="hint">Mínimo 6 caracteres</div>
+      <button class="btn" type="submit" id="regBtn">Crear cuenta</button>
+    </form>
+
+    <div class="footer-link">
+      ¿Ya tienes cuenta? <a id="loginLink" href="#">Iniciar sesión</a>
+    </div>
+  </div>
+</div>
+
+<script>
+var APP_URL = '';
+google.script.run.withSuccessHandler(function(url){
+  APP_URL = url;
+  document.getElementById('loginLink').href = url;
+}).withFailureHandler(function(){}).getAppUrl();
+
+function showErr(msg){ var el=document.getElementById('errAlert'); el.textContent=msg; el.classList.add('show'); document.getElementById('okAlert').classList.remove('show'); }
+function showOk(msg){ var el=document.getElementById('okAlert'); el.textContent=msg; el.classList.add('show'); document.getElementById('errAlert').classList.remove('show'); }
+function hideAlerts(){ document.getElementById('errAlert').classList.remove('show'); document.getElementById('okAlert').classList.remove('show'); }
+
+function doRegister(e) {
+  e.preventDefault();
+  hideAlerts();
+  var pass = document.getElementById('rPass').value;
+  var pass2 = document.getElementById('rPass2').value;
+  if (pass !== pass2) { showErr('Las contraseñas no coinciden'); return; }
+  if (pass.length < 6) { showErr('La contraseña debe tener al menos 6 caracteres'); return; }
+
+  var btn = document.getElementById('regBtn');
+  btn.disabled = true; btn.textContent = 'Registrando...';
+
+  var data = {
+    nombre: document.getElementById('rNombre').value.trim(),
+    apellido: document.getElementById('rApellido').value.trim(),
+    correo: document.getElementById('rCorreo').value.trim(),
+    institucion: document.getElementById('rInstitucion').value.trim(),
+    telefono: document.getElementById('rTelefono').value.trim(),
+    contrasena: pass
+  };
+
+  google.script.run
+    .withSuccessHandler(function(res) {
+      btn.disabled = false; btn.textContent = 'Crear cuenta';
+      if (!res.success) { showErr(res.error || 'Error al registrar'); return; }
+      showOk('¡Cuenta creada exitosamente! Redirigiendo al inicio de sesión...');
+      document.getElementById('regForm').reset();
+      setTimeout(function(){ if(APP_URL) window.location.href = APP_URL; }, 2500);
+    })
+    .withFailureHandler(function(err) {
+      btn.disabled = false; btn.textContent = 'Crear cuenta';
+      showErr('Error de conexión: ' + (err.message || err));
+    })
+    .registrarCoach(data);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CRODIT UABC - Participante</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0a0e1a;--card:#0f1629;--border:#1e2d4a;--blue:#3b82f6;--cyan:#06b6d4;--green:#10b981;--yellow:#f59e0b;--red:#ef4444;--text:#e2e8f0;--muted:#94a3b8;--sidebar:220px}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex}
+
+/* Sidebar */
+.sidebar{width:var(--sidebar);min-height:100vh;background:var(--card);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;z-index:100}
+.sidebar-brand{padding:1.5rem 1.2rem 1rem;border-bottom:1px solid var(--border)}
+.sidebar-brand .logo{font-size:1.1rem;font-weight:800;background:linear-gradient(135deg,var(--blue),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.sidebar-brand .role-badge{display:inline-block;background:rgba(16,185,129,.15);border:1px solid rgba(16,185,129,.3);color:#6ee7b7;font-size:.7rem;padding:.2rem .5rem;border-radius:20px;margin-top:.4rem;font-weight:600}
+.sidebar-user{padding:.8rem 1.2rem;border-bottom:1px solid var(--border)}
+.sidebar-user .user-name{font-size:.85rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sidebar-user .user-email{font-size:.72rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nav{flex:1;padding:.8rem 0}
+.nav-item{display:flex;align-items:center;gap:.7rem;padding:.65rem 1.2rem;cursor:pointer;font-size:.88rem;color:var(--muted);transition:all .15s;border-left:3px solid transparent}
+.nav-item:hover{background:rgba(59,130,246,.07);color:var(--text)}
+.nav-item.active{background:rgba(59,130,246,.1);color:var(--blue);border-left-color:var(--blue)}
+.nav-icon{font-size:1rem;width:1.2rem;text-align:center}
+.sidebar-footer{padding:1rem 1.2rem;border-top:1px solid var(--border)}
+.btn-logout{width:100%;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);color:#fca5a5;padding:.55rem;border-radius:8px;cursor:pointer;font-size:.82rem;font-weight:600;transition:background .2s}
+.btn-logout:hover{background:rgba(239,68,68,.2)}
+
+/* Main */
+.main{margin-left:var(--sidebar);flex:1;padding:2rem;min-height:100vh}
+.section{display:none}
+.section.active{display:block}
+.section-title{font-size:1.25rem;font-weight:700;margin-bottom:1.5rem}
+
+/* Welcome */
+.welcome-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:2rem}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.2rem;text-align:center}
+.stat-num{font-size:2rem;font-weight:800;background:linear-gradient(135deg,var(--blue),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.stat-label{font-size:.78rem;color:var(--muted);margin-top:.3rem}
+.profile-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.5rem}
+.profile-card h3{font-size:1rem;font-weight:700;margin-bottom:1rem;color:var(--cyan)}
+.profile-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:.8rem}
+.profile-field label{font-size:.72rem;color:var(--muted);display:block;margin-bottom:.2rem;font-weight:500}
+.profile-field span{font-size:.9rem;font-weight:500}
+
+/* Teams */
+.team-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.5rem;margin-bottom:1.2rem}
+.team-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:.5rem}
+.team-name{font-size:1.1rem;font-weight:700}
+.cat-badge{background:rgba(6,182,212,.12);border:1px solid rgba(6,182,212,.3);color:#67e8f9;font-size:.72rem;padding:.25rem .6rem;border-radius:20px;font-weight:600}
+.members-title{font-size:.8rem;color:var(--muted);font-weight:600;margin-bottom:.6rem;text-transform:uppercase;letter-spacing:.05em}
+.members-list{display:flex;flex-wrap:wrap;gap:.4rem}
+.member-chip{background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.2);color:#93c5fd;font-size:.78rem;padding:.2rem .55rem;border-radius:20px}
+.member-chip.me{background:rgba(16,185,129,.12);border-color:rgba(16,185,129,.3);color:#6ee7b7;font-weight:600}
+
+/* Inscriptions */
+.ins-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.2rem;margin-bottom:.8rem}
+.ins-header{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;margin-bottom:.6rem}
+.ins-event{font-size:.95rem;font-weight:600}
+.ins-team{font-size:.8rem;color:var(--muted);margin-top:.15rem}
+.badge{display:inline-block;font-size:.72rem;padding:.2rem .6rem;border-radius:20px;font-weight:600;white-space:nowrap}
+.badge-pending{background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.3);color:#fde68a}
+.badge-approved{background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.3);color:#6ee7b7}
+.badge-rejected{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);color:#fca5a5}
+.badge-review{background:rgba(59,130,246,.12);border:1px solid rgba(59,130,246,.3);color:#93c5fd}
+.ins-meta{display:flex;flex-wrap:wrap;gap:1rem;font-size:.78rem;color:var(--muted);margin-top:.4rem}
+.ins-meta span{display:flex;align-items:center;gap:.3rem}
+.evidence-link{color:var(--blue);text-decoration:none;font-size:.78rem}
+.evidence-link:hover{text-decoration:underline}
+
+/* Empty state */
+.empty{text-align:center;padding:3rem 1rem;color:var(--muted)}
+.empty-icon{font-size:2.5rem;margin-bottom:.8rem}
+.empty-text{font-size:.9rem}
+
+/* Loading */
+.loading{text-align:center;padding:3rem;color:var(--muted);font-size:.9rem}
+.spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 1rem}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Alert */
+.alert{padding:.65rem 1rem;border-radius:8px;font-size:.85rem;margin-bottom:1rem;display:none}
+.alert-error{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);color:#fca5a5}
+.show{display:block !important}
+
+/* Responsive */
+@media(max-width:680px){
+  .sidebar{transform:translateX(-100%);transition:transform .25s}
+  .sidebar.open{transform:translateX(0)}
+  .main{margin-left:0;padding:1rem}
+  .menu-btn{display:flex}
+  .welcome-grid{grid-template-columns:1fr 1fr}
+}
+.menu-btn{display:none;position:fixed;top:1rem;left:1rem;z-index:200;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:.4rem .55rem;cursor:pointer;font-size:1.1rem;color:var(--text)}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99}
+.overlay.show{display:block}
+</style>
+</head>
+<body>
+
+<button class="menu-btn" id="menuBtn" onclick="toggleMenu()">☰</button>
+<div class="overlay" id="overlay" onclick="toggleMenu()"></div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-brand">
+    <div class="logo"><img src="https://drive.google.com/thumbnail?id=1b8v80IfvGNFsoPcvaPPXrPyTrhORYtRC&sz=w600" alt="CRODT-UABC" style="height:38px;width:auto;object-fit:contain;display:block;margin:0 auto" onerror="this.parentNode.innerHTML='⚡ CRODT';this.parentNode.style.background='linear-gradient(135deg,var(--blue),var(--cyan))';this.parentNode.style.webkitBackgroundClip='text';this.parentNode.style.webkitTextFillColor='transparent';this.parentNode.style.padding='1.2rem 1.5rem'"></div>
+    <div class="role-badge">Participante</div>
+  </div>
+  <div class="sidebar-user">
+    <div class="user-name" id="sidebarName">—</div>
+    <div class="user-email" id="sidebarEmail">—</div>
+  </div>
+  <nav class="nav">
+    <div class="nav-item active" onclick="showSection('perfil')">
+      <span class="nav-icon">👤</span> Mi Perfil
+    </div>
+    <div class="nav-item" onclick="showSection('equipos')">
+      <span class="nav-icon">🤖</span> Mis Equipos
+    </div>
+    <div class="nav-item" onclick="showSection('inscripciones')">
+      <span class="nav-icon">📋</span> Inscripciones
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    <button class="btn-logout" onclick="doLogout()">Cerrar sesión</button>
+  </div>
+</aside>
+
+<main class="main">
+
+  <!-- PERFIL -->
+  <div class="section active" id="sec-perfil">
+    <div class="section-title">Mi Perfil</div>
+    <div class="loading" id="loadingPerfil"><div class="spinner"></div>Cargando...</div>
+    <div id="perfilContent" style="display:none">
+      <div class="welcome-grid" id="statsGrid"></div>
+      <div class="profile-card">
+        <h3>Información personal</h3>
+        <div class="profile-grid" id="profileGrid"></div>
+      </div>
+    </div>
+    <div class="alert alert-error" id="errPerfil"></div>
+  </div>
+
+  <!-- EQUIPOS -->
+  <div class="section" id="sec-equipos">
+    <div class="section-title">Mis Equipos</div>
+    <div class="loading" id="loadingEquipos"><div class="spinner"></div>Cargando...</div>
+    <div id="equiposContent" style="display:none"></div>
+    <div class="alert alert-error" id="errEquipos"></div>
+  </div>
+
+  <!-- INSCRIPCIONES -->
+  <div class="section" id="sec-inscripciones">
+    <div class="section-title">Inscripciones a Eventos</div>
+    <div class="loading" id="loadingIns"><div class="spinner"></div>Cargando...</div>
+    <div id="insContent" style="display:none"></div>
+    <div class="alert alert-error" id="errIns"></div>
+  </div>
+
+</main>
+
+<script>
+console.log('[ParticipantView] build v3 — payload sanitizado');
+var TOKEN = '<?= token ?>';
+var APP_URL = '';
+var DATA = null;
+
+// Init
+google.script.run
+  .withSuccessHandler(function(url){ APP_URL = url; })
+  .withFailureHandler(function(){})
+  .getAppUrl();
+
+google.script.run
+  .withSuccessHandler(function(res) {
+    if (!res.valid || res.rol !== 'participante') {
+      sessionStorage.clear();
+      google.script.run.withSuccessHandler(function(u){ window.location.href = u; }).getAppUrl();
+      return;
+    }
+    document.getElementById('sidebarName').textContent = res.nombre || '';
+    document.getElementById('sidebarEmail').textContent = res.email || '';
+    loadData();
+  })
+  .withFailureHandler(function() {
+    sessionStorage.clear();
+    google.script.run.withSuccessHandler(function(u){ window.location.href = u; }).getAppUrl();
+  })
+  .verificarSesion(TOKEN);
+
+function loadData() {
+  google.script.run
+    .withSuccessHandler(function(res) {
+      if (!res || !res.success) {
+        showErr('errPerfil', (res && res.error) || 'Respuesta inválida del servidor');
+        hideLoading();
+        return;
+      }
+      DATA = res.data || {};
+      renderPerfil();
+      renderEquipos();
+      renderInscripciones();
+    })
+    .withFailureHandler(function(err) {
+      showErr('errPerfil', 'Error de conexión: ' + ((err && err.message) || err));
+      hideLoading();
+    })
+    .consultarParticipante(TOKEN);
+}
+
+function hideLoading() {
+  ['loadingPerfil','loadingEquipos','loadingIns'].forEach(function(id) {
+    document.getElementById(id).style.display = 'none';
+  });
+}
+
+function renderPerfil() {
+  if (!DATA) return;
+  document.getElementById('loadingPerfil').style.display = 'none';
+
+  var totalEquipos = (DATA.equipos || []).length;
+  var allIns = [];
+  (DATA.equipos || []).forEach(function(eq) {
+    (eq.inscripciones || []).forEach(function(i) { allIns.push(i); });
+  });
+  var aprobadas = allIns.filter(function(i){ return i.estado === 'aprobada'; }).length;
+
+  var stats = [
+    { num: totalEquipos, label: 'Equipos' },
+    { num: allIns.length, label: 'Inscripciones' },
+    { num: aprobadas, label: 'Aprobadas' }
+  ];
+  document.getElementById('statsGrid').innerHTML = stats.map(function(s) {
+    return '<div class="stat-card"><div class="stat-num">' + s.num + '</div><div class="stat-label">' + s.label + '</div></div>';
+  }).join('');
+
+  var fields = [
+    { label: 'Nombre completo', val: (DATA.nombre || '') + ' ' + (DATA.apellido || '') },
+    { label: 'Correo', val: DATA.correo || '—' },
+    { label: 'Edad', val: DATA.edad ? DATA.edad + ' años' : '—' },
+    { label: 'Escolaridad', val: DATA.escolaridad || '—' },
+    { label: 'ID', val: DATA.idParticipante || '—' }
+  ];
+  document.getElementById('profileGrid').innerHTML = fields.map(function(f) {
+    return '<div class="profile-field"><label>' + f.label + '</label><span>' + esc(f.val) + '</span></div>';
+  }).join('');
+
+  document.getElementById('perfilContent').style.display = 'block';
+}
+
+function renderEquipos() {
+  if (!DATA) return;
+  document.getElementById('loadingEquipos').style.display = 'none';
+  var equipos = DATA.equipos || [];
+  var myId = sessionStorage.getItem('idParticipante') || '';
+  var container = document.getElementById('equiposContent');
+
+  if (equipos.length === 0) {
+    container.innerHTML = '<div class="empty"><div class="empty-icon">🤖</div><div class="empty-text">No perteneces a ningún equipo aún.</div></div>';
+  } else {
+    container.innerHTML = equipos.map(function(eq) {
+      var members = (eq.miembros || []).map(function(m) {
+        var isMe = (m.idParticipante === myId);
+        return '<span class="member-chip' + (isMe ? ' me' : '') + '">' + esc(m.nombre + ' ' + m.apellido) + (isMe ? ' (tú)' : '') + '</span>';
+      }).join('');
+      if (!members) members = '<span style="color:var(--muted);font-size:.8rem">Sin miembros registrados</span>';
+      return '<div class="team-card">'
+        + '<div class="team-header"><div class="team-name">' + esc(eq.nombreEquipo) + '</div><span class="cat-badge">' + esc(eq.categoriaNombre || '—') + '</span></div>'
+        + '<div class="members-title">Integrantes</div>'
+        + '<div class="members-list">' + members + '</div>'
+        + '</div>';
+    }).join('');
+  }
+  container.style.display = 'block';
+}
+
+function renderInscripciones() {
+  if (!DATA) return;
+  document.getElementById('loadingIns').style.display = 'none';
+  var allIns = [];
+  (DATA.equipos || []).forEach(function(eq) {
+    (eq.inscripciones || []).forEach(function(i) {
+      allIns.push({ equipo: eq.nombreEquipo, categoria: i.categoria || eq.categoriaNombre || '—', ins: i });
+    });
+  });
+  var container = document.getElementById('insContent');
+
+  if (allIns.length === 0) {
+    container.innerHTML = '<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">No hay inscripciones registradas aún.</div></div>';
+  } else {
+    // Sort newest first
+    allIns.sort(function(a, b) {
+      return new Date(b.ins.fechaInscripcion) - new Date(a.ins.fechaInscripcion);
+    });
+    container.innerHTML = allIns.map(function(item) {
+      var i = item.ins;
+      var badgeClass = { pendiente: 'badge-pending', aprobada: 'badge-approved', rechazada: 'badge-rejected', en_revision: 'badge-review' }[i.estado] || 'badge-pending';
+      var estadoLabel = { pendiente: 'Pendiente', aprobada: 'Aprobada', rechazada: 'Rechazada', en_revision: 'En revisión' }[i.estado] || i.estado;
+      var _fmtDMY=function(v){ if(!v) return '—'; if(typeof v==='string'){ var mm=v.match(/^(\d{4})-(\d{2})-(\d{2})/); if(mm) return mm[3]+'/'+mm[2]+'/'+mm[1]; } var dt=new Date(v); var dd=('0'+dt.getDate()).slice(-2), mo=('0'+(dt.getMonth()+1)).slice(-2), yy=dt.getFullYear(); return dd+'/'+mo+'/'+yy; };
+      var fechaIns = _fmtDMY(i.fechaInscripcion);
+      var fechaEv = _fmtDMY(i.fechaInicio);
+      var evidencia = i.evidenciaURL
+        ? '<a href="' + esc(i.evidenciaURL) + '" target="_blank" class="evidence-link">Ver evidencia →</a>'
+        : '<span style="color:var(--muted)">Sin evidencia</span>';
+      return '<div class="ins-card">'
+        + '<div class="ins-header">'
+        +   '<div><div class="ins-event">' + esc(i.nombreEvento || '—') + '</div>'
+        +   '<div class="ins-team">Equipo: <strong>' + esc(item.equipo) + '</strong> · ' + esc(item.categoria) + '</div></div>'
+        +   '<span class="badge ' + badgeClass + '">' + estadoLabel + '</span>'
+        + '</div>'
+        + '<div class="ins-meta">'
+        +   '<span>📅 Inscripción: ' + fechaIns + '</span>'
+        +   '<span>🗓 Evento: ' + fechaEv + '</span>'
+        +   (i.ubicacion ? '<span>📍 ' + esc(i.ubicacion) + '</span>' : '')
+        +   '<span>' + evidencia + '</span>'
+        + '</div>'
+        + '</div>';
+    }).join('');
+  }
+  container.style.display = 'block';
+}
+
+// Navigation
+function showSection(name) {
+  document.querySelectorAll('.section').forEach(function(s){ s.classList.remove('active'); });
+  document.querySelectorAll('.nav-item').forEach(function(n){ n.classList.remove('active'); });
+  document.getElementById('sec-' + name).classList.add('active');
+  var items = document.querySelectorAll('.nav-item');
+  var map = { perfil: 0, equipos: 1, inscripciones: 2 };
+  if (map[name] !== undefined) items[map[name]].classList.add('active');
+  if (window.innerWidth <= 680) toggleMenu(false);
+}
+
+function toggleMenu(forceClose) {
+  var sb = document.getElementById('sidebar');
+  var ov = document.getElementById('overlay');
+  var isOpen = sb.classList.contains('open');
+  if (forceClose === false || isOpen) {
+    sb.classList.remove('open'); ov.classList.remove('show');
+  } else {
+    sb.classList.add('open'); ov.classList.add('show');
+  }
+}
+
+function showErr(id, msg) {
+  var el = document.getElementById(id);
+  el.textContent = msg; el.classList.add('show');
+}
+
+function esc(str) {
+  if (str === null || str === undefined) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function doLogout() {
+  google.script.run
+    .withSuccessHandler(function() { sessionStorage.clear(); if(APP_URL) window.location.href = APP_URL; })
+    .withFailureHandler(function() { sessionStorage.clear(); if(APP_URL) window.location.href = APP_URL; })
+    .cerrarSesion(TOKEN);
+}
+</script>
+</body>
+</html>
